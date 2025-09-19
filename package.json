@@ -1,23 +1,52 @@
 {
-  "name": "fluxio-front",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "start": "next start"
-  },
-  "dependencies": {
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "next": "15.5.3"
-  },
-  "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
-  }
+   "name": "fluxio-front",
+   "version": "0.1.0",
+   "private": true,
+   "scripts": {
+      "dev": "next dev --turbopack",
+      "build": "next build --turbopack",
+      "start": "next start",
+      "lint": "biome lint src/",
+      "lint:fix": "biome lint --write src/",
+      "format": "biome format src/",
+      "format:fix": "biome format --write src/",
+      "check": "biome check src/",
+      "check:fix": "biome check --write src/"
+   },
+   "dependencies": {
+      "@hookform/resolvers": "^5.2.2",
+      "@radix-ui/react-label": "2.1.7",
+      "@tanstack/react-query": "5.87.4",
+      "@tanstack/react-query-devtools": "^5.89.0",
+      "@tanstack/react-table": "8.21.3",
+      "class-variance-authority": "0.7.1",
+      "clsx": "2.1.1",
+      "framer-motion": "12.23.12",
+      "immer": "^10.1.3",
+      "lucide-react": "0.544.0",
+      "next": "15.5.3",
+      "next-themes": "0.4.6",
+      "react": "19.1.0",
+      "react-dom": "19.1.0",
+      "react-hook-form": "7.62.0",
+      "react-wavify": "1.11.1",
+      "recharts": "2.15.4",
+      "tailwind-merge": "3.3.1",
+      "tailwind-variants": "3.1.1",
+      "zod": "4.1.8",
+      "zustand": "^5.0.8"
+   },
+   "devDependencies": {
+      "@biomejs/biome": "2.2.4",
+      "@tailwindcss/aspect-ratio": "0.4.2",
+      "@tailwindcss/forms": "0.5.10",
+      "@tailwindcss/postcss": "4",
+      "@tailwindcss/typography": "0.5.16",
+      "@types/node": "20",
+      "@types/react": "19",
+      "@types/react-dom": "19",
+      "tailwindcss": "4",
+      "tw-animate-css": "1.3.8",
+      "typescript": "5"
+   }
 }
