@@ -75,7 +75,19 @@ class ApiClient {
         throw new Error(errorData.message || `HTTP ${response.status}`)
       }
 
-      return await response.json()
+      // Handle 204 No Content responses
+      if (response.status === 204) {
+        return undefined as T
+      }
+
+      // Check if response has content before parsing JSON
+      const contentType = response.headers.get("content-type")
+      if (contentType?.includes("application/json")) {
+        return await response.json()
+      }
+
+      // For non-JSON responses, return empty object
+      return {} as T
     } catch (error) {
       clearTimeout(timeoutId)
       if (error instanceof Error) {
@@ -151,6 +163,14 @@ class ApiClient {
 
   async delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
     return await this.request<T>(endpoint, { ...options, method: "DELETE" })
+  }
+
+  async patch<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
+    return await this.request<T>(endpoint, {
+      ...options,
+      method: "PATCH",
+      body: data ? JSON.stringify(data) : undefined,
+    })
   }
 }
 
