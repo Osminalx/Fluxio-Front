@@ -5,6 +5,7 @@ import type {
   CreateBankAccountRequest,
   UpdateBankAccountRequest,
 } from "@/types/bank-account"
+import type { Status } from "@/types/status"
 import { bankAccountApi } from "./bank-account-api"
 
 // Query keys for TanStack Query
@@ -114,13 +115,11 @@ export function useDeleteBankAccount() {
         }
 
         const data = old as {
-          // biome-ignore lint/style/useNamingConvention: API uses snake_case
-          bank_accounts: Array<{ id: string; status: string; [key: string]: unknown }>
+          bank_accounts: Array<{ id: string; status: Status; [key: string]: unknown }>
         }
 
         return {
           ...data,
-          // biome-ignore lint/style/useNamingConvention: API uses snake_case
           bank_accounts: data.bank_accounts.map((account) =>
             account.id === id ? { ...account, status: "deleted" } : account
           ),
@@ -167,13 +166,11 @@ export function useRestoreBankAccount() {
         }
 
         const data = old as {
-          // biome-ignore lint/style/useNamingConvention: API uses snake_case
-          bank_accounts: Array<{ id: string; status: string; [key: string]: unknown }>
+          bank_accounts: Array<{ id: string; status: Status; [key: string]: unknown }>
         }
 
         return {
           ...data,
-          // biome-ignore lint/style/useNamingConvention: API uses snake_case
           bank_accounts: data.bank_accounts.map((account) =>
             account.id === id ? { ...account, status: "active" } : account
           ),
@@ -194,12 +191,10 @@ export function useRestoreBankAccount() {
             return old
           }
 
-          // biome-ignore lint/style/useNamingConvention: API uses snake_case
           const data = old as { bank_accounts: Array<{ id: string; [key: string]: unknown }> }
 
           return {
             ...data,
-            // biome-ignore lint/style/useNamingConvention: API uses snake_case
             bank_accounts: data.bank_accounts.map((account) =>
               account.id === id ? restoredAccount : account
             ),

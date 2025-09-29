@@ -1,20 +1,19 @@
 import { z } from "zod"
+import { type Status, statusSchema } from "./status"
 
 // Zod Schemas for validation
 export const createBankAccountSchema = z.object({
-  // biome-ignore lint/style/useNamingConvention: API uses snake_case
   account_name: z.string().min(1, "Account name is required"),
   balance: z.number().min(0, "Balance must be non-negative"),
 })
 
 export const updateBankAccountSchema = z.object({
-  // biome-ignore lint/style/useNamingConvention: API uses snake_case
   account_name: z.string().min(1, "Account name is required").optional(),
   balance: z.number().min(0, "Balance must be non-negative").optional(),
 })
 
 export const bankAccountStatusSchema = z.object({
-  status: z.enum(["active", "deleted", "suspended", "archived", "pending", "locked"]),
+  status: statusSchema,
 })
 
 // TypeScript types inferred from schemas
@@ -25,20 +24,15 @@ export type BankAccountStatusRequest = z.infer<typeof bankAccountStatusSchema>
 // API Response types
 export interface BankAccount {
   id: string
-  // biome-ignore lint/style/useNamingConvention: API uses snake_case
   account_name: string
   balance: number
-  status: "active" | "deleted" | "suspended" | "archived" | "pending" | "locked"
-  // biome-ignore lint/style/useNamingConvention: API uses snake_case
+  status: Status
   created_at: string
-  // biome-ignore lint/style/useNamingConvention: API uses snake_case
   updated_at: string
-  // biome-ignore lint/style/useNamingConvention: API uses snake_case
   status_changed_at: string
 }
 
 export interface BankAccountsResponse {
-  // biome-ignore lint/style/useNamingConvention: API uses snake_case
   bank_accounts: BankAccount[]
   count: number
 }
@@ -53,7 +47,6 @@ export interface BankAccountState {
 
 // Filter and query types
 export interface BankAccountFilters {
-  // biome-ignore lint/style/useNamingConvention: API uses snake_case
   include_deleted?: boolean
-  status?: "active" | "deleted" | "suspended" | "archived" | "pending" | "locked"
+  status?: Status
 }

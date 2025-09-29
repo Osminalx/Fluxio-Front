@@ -323,6 +323,53 @@
           }
         }
       }
+    },
+    {
+      "includes": ["src/types/*.ts", "src/lib/*-api.ts", "src/lib/*-queries.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useNamingConvention": {
+              "level": "error",
+              "options": {
+                "strictCase": false,
+                "conventions": [
+                  {
+                    "selector": {
+                      "kind": "function"
+                    },
+                    "formats": ["camelCase", "PascalCase"]
+                  },
+                  {
+                    "selector": {
+                      "kind": "variable"
+                    },
+                    "formats": ["camelCase", "PascalCase", "CONSTANT_CASE", "snake_case"]
+                  },
+                  {
+                    "selector": {
+                      "kind": "objectLiteralProperty"
+                    },
+                    "formats": ["camelCase", "PascalCase", "CONSTANT_CASE", "snake_case"]
+                  },
+                  {
+                    "selector": {
+                      "kind": "typeProperty"
+                    },
+                    "formats": ["camelCase", "PascalCase", "CONSTANT_CASE", "snake_case"]
+                  },
+                  {
+                    "selector": {
+                      "kind": "typeLike"
+                    },
+                    "formats": ["PascalCase"]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }

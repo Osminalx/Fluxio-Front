@@ -25,6 +25,7 @@ import {
 } from "@/lib/bank-account-queries"
 import { cn } from "@/lib/utils"
 import type { BankAccount } from "@/types/bank-account"
+import { STATUS_VALUES, type Status, StatusUtils } from "@/types/status"
 
 interface BankAccountsListProps {
   onCreateAccount: () => void
@@ -110,32 +111,13 @@ export function BankAccountsList({
     }
   }
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "active":
-        return "Active"
-      case "suspended":
-        return "Suspended"
-      case "deleted":
-        return "Deleted"
-      case "archived":
-        return "Archived"
-      case "pending":
-        return "Pending"
-      case "locked":
-        return "Locked"
-      default:
-        return status.charAt(0).toUpperCase() + status.slice(1)
-    }
+  const getStatusLabel = (status: Status) => {
+    return StatusUtils.getLabel(status)
   }
 
-  const availableStatuses: BankAccount["status"][] = [
-    "active",
-    "suspended",
-    "archived",
-    "pending",
-    "locked",
-  ]
+  const availableStatuses: BankAccount["status"][] = STATUS_VALUES.filter(
+    (status) => status !== "deleted" // Don't show deleted as an option to change to
+  )
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -189,23 +171,8 @@ export function BankAccountsList({
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "text-green-700 bg-green-50 border-green-200"
-      case "suspended":
-        return "text-yellow-700 bg-yellow-50 border-yellow-200"
-      case "deleted":
-        return "text-red-700 bg-red-50 border-red-200"
-      case "archived":
-        return "text-gray-700 bg-gray-50 border-gray-200"
-      case "pending":
-        return "text-blue-700 bg-blue-50 border-blue-200"
-      case "locked":
-        return "text-red-800 bg-red-100 border-red-300"
-      default:
-        return "text-gray-700 bg-gray-50 border-gray-200"
-    }
+  const getStatusColor = (status: Status) => {
+    return StatusUtils.getStyleClasses(status)
   }
 
   if (isLoading) {

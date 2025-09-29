@@ -3,11 +3,12 @@
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { BankAccount } from "@/types/bank-account"
+import type { Status } from "@/types/status"
 import { BankAccountForm } from "./bank-account-form"
 import { BankAccountsList } from "./bank-accounts-list"
 
 interface BankAccountsPageProps {
-  initialTab?: "active" | "deleted"
+  initialTab?: Extract<Status, "active" | "deleted">
 }
 
 export function BankAccountsPage({ initialTab = "active" }: BankAccountsPageProps) {
@@ -39,7 +40,7 @@ export function BankAccountsPage({ initialTab = "active" }: BankAccountsPageProp
     <div className="space-y-6">
       <Tabs
         value={activeTab}
-        onValueChange={(value) => setActiveTab(value as "active" | "deleted")}
+        onValueChange={(value) => setActiveTab(value as Extract<Status, "active" | "deleted">)}
       >
         <div className="flex items-center justify-between">
           <TabsList className="grid w-[400px] grid-cols-2">
