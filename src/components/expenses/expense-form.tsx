@@ -1,0 +1,346 @@
+"use client"
+
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Plus } from "lucide-react"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { useBankAccounts } from "@/lib/bank-account-queries"
+import { useCreateCategoryMutation } from "@/lib/category-queries"
+import { useCreateExpenseMutation } from "@/lib/expense-queries"
+import { useExpenseTypesWithCategoriesQuery } from "@/lib/expense-type-queries"
+import { type CreateExpenseRequest, createExpenseSchema } from "@/types/expense"
+import { ExpenseTypeUtils } from "@/types/expense-type"
+
+interface ExpenseFormProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export function ExpenseForm({ open, onOpenChange }: ExpenseFormProps) {
+  const [showNewCategoryForm, setShowNewCategoryForm] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState("")
+  const [selectedExpenseTypeId, setSelectedExpenseTypeId] = useState<string>("")
+
+  const form = useForm<CreateExpenseRequest>({
+    resolver: zodResolver(createExpenseSchema),
+    defaultValues: {
+      amount: 0,
+      bank_account_id: "",
+      category_id: "",
+      date: new Date().toISOString().split("T")[0], // Today's date in YYYY-MM-DD format
+      description: "",
+    },
+  })
+
+  const createExpenseMutation = useCreateExpenseMutation()
+  const createCategoryMutation = useCreateCategoryMutation()
+  const { data: bankAccountsData } = useBankAccounts()
+  const { data: expenseTypesData } = useExpenseTypesWithCategoriesQuery()
+
+  const bankAccounts = bankAccountsData?.bank_accounts || []
+  const expenseTypes = expenseTypesData?.expense_types || []
+
+  const onSubmit = async (data: CreateExpenseRequest) => {
+    try {
+      await createExpenseMutation.mutateAsync(data)
+      form.reset()
+      onOpenChange(false)
+    } catch (_error) {
+      // Handle error silently or show user notification
+    }
+  }
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim() || !selectedExpenseTypeId) {
+      return
+    }
+
+    try {
+      const newCategory = await createCategoryMutation.mutateAsync({
+        name: newCategoryName.trim(),
+        expense_type_id: selectedExpenseTypeId,
+      })
+
+      // Set the new category as selected
+      form.setValue("category_id", newCategory.id)
+
+      // Reset form state
+      setNewCategoryName("")
+      setSelectedExpenseTypeId("")
+      setShowNewCategoryForm(false)
+    } catch (_error) {
+      // Handle error silently or show user notification
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[600px] persona-modal">
+        <DialogHeader>
+          <DialogTitle className="persona-title">Add New Expense</DialogTitle>
+          <DialogDescription>
+            Track a new expense and categorize it according to the 50/30/20 philosophy.
+          </DialogDescription>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              {/* Amount */}
+              <FormField
+                control={form.control}
+                name="amount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Amount</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        {...field}
+                        onChange={(e) => field.onChange(Number.parseFloat(e.target.value) || 0)}
+                        className="persona-input"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Date */}
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} className="persona-input" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Bank Account */}
+            <FormField
+              control={form.control}
+              name="bank_account_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bank Account</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="persona-input">
+                        <SelectValue placeholder="Select a bank account" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {bankAccounts.map(
+                        (account: { id: string; account_name: string; balance: number }) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{account.account_name}</span>
+                              <span className="text-sm text-muted-foreground ml-2">
+                                ${account.balance.toLocaleString()}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        )
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Category Selection */}
+            <FormField
+              control={form.control}
+              name="category_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center justify-between">
+                    Category
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowNewCategoryForm(true)}
+                      className="persona-hover"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      New Category
+                    </Button>
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="persona-input">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {expenseTypes.map((expenseType) => (
+                        <div key={expenseType.id}>
+                          <div className="px-2 py-1 text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                            <div
+                              className="w-2 h-2 rounded-full"
+                              style={{
+                                backgroundColor: ExpenseTypeUtils.getDisplayColor(expenseType.name),
+                              }}
+                            />
+                            {expenseType.name} (
+                            {ExpenseTypeUtils.getRecommendedPercentage(expenseType.name)}%)
+                          </div>
+                          {expenseType.categories.map((category) => (
+                            <SelectItem key={category.id} value={category.id} className="pl-6">
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </div>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* New Category Form */}
+            {showNewCategoryForm && (
+              <div className="p-4 border rounded-lg bg-muted/50 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Create New Category</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowNewCategoryForm(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs">Expense Type</Label>
+                    <Select onValueChange={setSelectedExpenseTypeId}>
+                      <SelectTrigger className="h-8">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {expenseTypes.map((expenseType) => (
+                          <SelectItem key={expenseType.id} value={expenseType.id}>
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-2 h-2 rounded-full"
+                                style={{
+                                  backgroundColor: ExpenseTypeUtils.getDisplayColor(
+                                    expenseType.name
+                                  ),
+                                }}
+                              />
+                              {expenseType.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs">Category Name</Label>
+                    <Input
+                      placeholder="e.g., Groceries"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      className="h-8"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleCreateCategory}
+                  disabled={!newCategoryName.trim() || !selectedExpenseTypeId}
+                  className="w-full"
+                >
+                  Create Category
+                </Button>
+              </div>
+            )}
+
+            {/* Description */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="What was this expense for?"
+                      className="persona-input resize-none"
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="persona-hover"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={createExpenseMutation.isPending}
+                className="persona-glow bg-gradient-to-r from-primary to-accent"
+              >
+                {createExpenseMutation.isPending ? "Adding..." : "Add Expense"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  )
+}

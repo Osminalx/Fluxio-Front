@@ -19,6 +19,7 @@ export function useCurrentUser() {
     queryKey: authKeys.user(),
     queryFn: getCurrentUser,
     retry: false,
+    enabled: false, // Don't auto-fetch, only when explicitly called
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   })

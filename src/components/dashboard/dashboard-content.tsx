@@ -58,7 +58,7 @@ export function DashboardContent() {
             Welcome back! Here's your financial overview.
           </p>
         </div>
-        <Button variant="persona" className="gap-2">
+        <Button variant="default" className="gap-2">
           <Plus className="h-4 w-4" />
           Add Transaction
         </Button>

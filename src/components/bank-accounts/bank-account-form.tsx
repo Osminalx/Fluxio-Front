@@ -156,7 +156,7 @@ export function BankAccountForm({ account, onClose, onSuccess }: BankAccountForm
               >
                 Cancel
               </Button>
-              <Button type="submit" variant="persona" className="flex-1" disabled={isLoading}>
+              <Button type="submit" variant="default" className="flex-1" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isEditing ? "Update Account" : "Create Account"}
               </Button>

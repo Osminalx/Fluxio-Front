@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils"
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Bank Accounts", href: "/bank-accounts", icon: Wallet },
-  { name: "Transactions", href: "/transactions", icon: Receipt },
+  { name: "Expenses", href: "/expenses", icon: Receipt },
   { name: "Budgets", href: "/budgets", icon: Target },
   { name: "Analytics", href: "/analytics", icon: TrendingUp },
   { name: "Reports", href: "/reports", icon: PieChart },

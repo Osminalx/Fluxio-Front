@@ -227,7 +227,7 @@ export function BankAccountsList({
           </p>
         </div>
         {!showDeleted && (
-          <Button variant="persona" className="gap-2" onClick={onCreateAccount}>
+          <Button variant="default" className="gap-2" onClick={onCreateAccount}>
             <Plus className="h-4 w-4" />
             Add Account
           </Button>
@@ -248,7 +248,7 @@ export function BankAccountsList({
                 : "Get started by adding your first bank account."}
             </p>
             {!showDeleted && (
-              <Button variant="persona" onClick={onCreateAccount}>
+              <Button variant="default" onClick={onCreateAccount}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Your First Account
               </Button>
