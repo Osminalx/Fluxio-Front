@@ -1,6 +1,6 @@
 "use client"
 
-import { DollarSign, Filter, Plus, Settings, TrendingUp } from "lucide-react"
+import { DollarSign, Filter, Plus, TrendingUp } from "lucide-react"
 import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -15,7 +15,6 @@ import { ExpensesList } from "./expenses-list"
 
 export function ExpensesPage() {
   const [showExpenseForm, setShowExpenseForm] = useState(false)
-  const [showCategoriesManagement, setShowCategoriesManagement] = useState(false)
 
   const { data: summary } = useExpenseSummaryQuery()
 
@@ -32,14 +31,6 @@ export function ExpensesPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={() => setShowCategoriesManagement(true)}
-            className="persona-hover"
-          >
-            <Settings className="h-4 w-4 mr-2" />
-            Manage Categories
-          </Button>
           <Button
             onClick={() => setShowExpenseForm(true)}
             className="persona-glow bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
@@ -150,12 +141,11 @@ export function ExpensesPage() {
       </Tabs>
 
       {/* Modals */}
-      {showExpenseForm && <ExpenseForm open={showExpenseForm} onOpenChange={setShowExpenseForm} />}
-
-      {showCategoriesManagement && (
-        <CategoriesManagement
-          open={showCategoriesManagement}
-          onOpenChange={setShowCategoriesManagement}
+      {showExpenseForm && (
+        <ExpenseForm
+          open={showExpenseForm}
+          onOpenChange={setShowExpenseForm}
+          editingExpense={null}
         />
       )}
     </div>

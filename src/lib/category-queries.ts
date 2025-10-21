@@ -75,6 +75,7 @@ export const useCreateCategoryMutation = () => {
     mutationFn: (data: CreateCategoryRequest) => categoryApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.all })
+      queryClient.invalidateQueries({ queryKey: categoryKeys.grouped() })
     },
   })
 }
@@ -88,6 +89,8 @@ export const useUpdateCategoryMutation = () => {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: categoryKeys.grouped() })
+      queryClient.invalidateQueries({ queryKey: categoryKeys.all })
     },
   })
 }
@@ -99,6 +102,7 @@ export const useDeleteCategoryMutation = () => {
     mutationFn: (id: string) => categoryApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.all })
+      queryClient.invalidateQueries({ queryKey: categoryKeys.grouped() })
     },
   })
 }
@@ -111,6 +115,7 @@ export const useRestoreCategoryMutation = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: categoryKeys.grouped() })
     },
   })
 }
@@ -124,6 +129,7 @@ export const useUpdateCategoryStatusMutation = () => {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: categoryKeys.grouped() })
     },
   })
 }
@@ -135,6 +141,7 @@ export const useCreateDefaultCategoriesMutation = () => {
     mutationFn: () => categoryApi.createDefaults(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.all })
+      queryClient.invalidateQueries({ queryKey: categoryKeys.grouped() })
     },
   })
 }

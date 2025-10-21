@@ -2,6 +2,7 @@
 
 import { Edit, Eye, Filter, MoreHorizontal, Search, Trash2 } from "lucide-react"
 import { useState } from "react"
+import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,6 +10,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
@@ -20,25 +22,75 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useExpensesQuery } from "@/lib/expense-queries"
+import { useDeleteExpenseMutation, useExpensesQuery } from "@/lib/expense-queries"
+import type { Expense } from "@/types/expense"
 import { ExpenseTypeConverter, ExpenseTypeUtils } from "@/types/expense-type"
+import { AdvancedFilters, type ExpenseFilters } from "./advanced-filters"
+import { ExpenseDetailsModal } from "./expense-details-modal"
+import { ExpenseForm } from "./expense-form"
 
 export function ExpensesList() {
-  const [searchTerm, setSearchTerm] = useState("")
-  // const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null)
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null)
+  const [showExpenseForm, setShowExpenseForm] = useState(false)
+  const [showExpenseDetails, setShowExpenseDetails] = useState(false)
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+  const [filters, setFilters] = useState<ExpenseFilters>({
+    searchTerm: "",
+    bankAccountId: "all",
+    categoryId: "all",
+    status: "all",
+  })
 
   const { data: expenses, isLoading } = useExpensesQuery()
+  const deleteExpenseMutation = useDeleteExpenseMutation()
 
   // Ensure expenses is always an array
   const expensesList = Array.isArray(expenses) ? expenses : []
 
-  // Filter expenses based on search term
-  const filteredExpenses = expensesList.filter(
-    (expense) =>
-      expense.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      expense.category?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      expense.bank_account?.account_name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // Filter expenses based on search term and filters
+  const filteredExpenses = expensesList.filter((expense) => {
+    // Search term filter
+    const matchesSearch =
+      expense.description?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+      expense.category?.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+      expense.bank_account?.account_name.toLowerCase().includes(filters.searchTerm.toLowerCase())
+
+    // Date range filter
+    const expenseDate = new Date(expense.date)
+    const matchesDateRange =
+      (!filters.startDate || expenseDate >= new Date(filters.startDate)) &&
+      (!filters.endDate || expenseDate <= new Date(filters.endDate))
+
+    // Bank account filter
+    const matchesBankAccount =
+      !filters.bankAccountId ||
+      filters.bankAccountId === "all" ||
+      expense.bank_account_id === filters.bankAccountId
+
+    // Category filter
+    const matchesCategory =
+      !filters.categoryId ||
+      filters.categoryId === "all" ||
+      expense.category_id === filters.categoryId
+
+    // Status filter
+    const matchesStatus =
+      !filters.status || filters.status === "all" || expense.status === filters.status
+
+    // Amount range filter
+    const matchesAmountRange =
+      (!filters.minAmount || expense.amount >= filters.minAmount) &&
+      (!filters.maxAmount || expense.amount <= filters.maxAmount)
+
+    return (
+      matchesSearch &&
+      matchesDateRange &&
+      matchesBankAccount &&
+      matchesCategory &&
+      matchesStatus &&
+      matchesAmountRange
+    )
+  })
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -53,6 +105,29 @@ export function ExpensesList() {
       style: "currency",
       currency: "USD",
     }).format(amount)
+  }
+
+  const handleViewDetails = (expense: Expense) => {
+    setSelectedExpense(expense)
+    setShowExpenseDetails(true)
+  }
+
+  const handleEditExpense = (expense: Expense) => {
+    setSelectedExpense(expense)
+    setShowExpenseForm(true)
+  }
+
+  const handleDeleteExpense = async (expense: Expense) => {
+    try {
+      await deleteExpenseMutation.mutateAsync(expense.id)
+      toast.success("Expense deleted successfully")
+    } catch (_error) {
+      toast.error("Failed to delete expense")
+    }
+  }
+
+  const handleFiltersChange = (newFilters: ExpenseFilters) => {
+    setFilters(newFilters)
   }
 
   if (isLoading) {
@@ -82,12 +157,16 @@ export function ExpensesList() {
             <div className="flex-1">
               <Input
                 placeholder="Search by description, category, or account..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={filters.searchTerm}
+                onChange={(e) => handleFiltersChange({ ...filters, searchTerm: e.target.value })}
                 className="persona-input"
               />
             </div>
-            <Button variant="outline" className="persona-hover">
+            <Button
+              variant="outline"
+              className="persona-hover"
+              onClick={() => setShowAdvancedFilters(true)}
+            >
               <Filter className="h-4 w-4 mr-2" />
               Advanced Filters
             </Button>
@@ -124,7 +203,7 @@ export function ExpensesList() {
               {filteredExpenses.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    {searchTerm
+                    {filters.searchTerm
                       ? "No expenses match your search."
                       : "No expenses found. Add your first expense to get started!"}
                   </TableCell>
@@ -215,19 +294,19 @@ export function ExpensesList() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem
-                              onClick={() => {
-                                // TODO: Implement view details functionality
-                              }}
-                            >
+                            <DropdownMenuItem onClick={() => handleViewDetails(expense)}>
                               <Eye className="h-4 w-4 mr-2" />
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditExpense(expense)}>
                               <Edit className="h-4 w-4 mr-2" />
                               Edit Expense
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => handleDeleteExpense(expense)}
+                            >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete Expense
                             </DropdownMenuItem>
@@ -242,6 +321,28 @@ export function ExpensesList() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Modals */}
+      <AdvancedFilters
+        open={showAdvancedFilters}
+        onOpenChange={setShowAdvancedFilters}
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+      />
+
+      <ExpenseDetailsModal
+        open={showExpenseDetails}
+        onOpenChange={setShowExpenseDetails}
+        expense={selectedExpense}
+      />
+
+      {showExpenseForm && (
+        <ExpenseForm
+          open={showExpenseForm}
+          onOpenChange={setShowExpenseForm}
+          editingExpense={selectedExpense}
+        />
+      )}
     </div>
   )
 }

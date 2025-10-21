@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -34,16 +34,17 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { useBankAccounts } from "@/lib/bank-account-queries"
 import { useCreateCategoryMutation, useGroupedCategoriesQuery } from "@/lib/category-queries"
-import { useCreateExpenseMutation } from "@/lib/expense-queries"
-import { type CreateExpenseRequest, createExpenseSchema } from "@/types/expense"
+import { useCreateExpenseMutation, useUpdateExpenseMutation } from "@/lib/expense-queries"
+import { type CreateExpenseRequest, createExpenseSchema, type Expense } from "@/types/expense"
 import { EXPENSE_TYPES, ExpenseTypeUtils, type ExpenseTypeValue } from "@/types/expense-type"
 
 interface ExpenseFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  editingExpense?: Expense | null
 }
 
-export function ExpenseForm({ open, onOpenChange }: ExpenseFormProps) {
+export function ExpenseForm({ open, onOpenChange, editingExpense }: ExpenseFormProps) {
   const [showNewCategoryForm, setShowNewCategoryForm] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState("")
   const [selectedExpenseType, setSelectedExpenseType] = useState<ExpenseTypeValue | "">("")
@@ -54,12 +55,34 @@ export function ExpenseForm({ open, onOpenChange }: ExpenseFormProps) {
       amount: 0,
       bank_account_id: "",
       category_id: "",
-      date: new Date().toISOString().split("T")[0], // Today's date in YYYY-MM-DD format
+      date: new Date().toISOString().split("T")[0],
       description: "",
     },
   })
 
+  // Reset form when editing expense changes
+  useEffect(() => {
+    if (editingExpense) {
+      form.reset({
+        amount: editingExpense.amount,
+        bank_account_id: editingExpense.bank_account_id,
+        category_id: editingExpense.category_id,
+        date: editingExpense.date.split("T")[0],
+        description: editingExpense.description || "",
+      })
+    } else {
+      form.reset({
+        amount: 0,
+        bank_account_id: "",
+        category_id: "",
+        date: new Date().toISOString().split("T")[0],
+        description: "",
+      })
+    }
+  }, [editingExpense, form])
+
   const createExpenseMutation = useCreateExpenseMutation()
+  const updateExpenseMutation = useUpdateExpenseMutation()
   const createCategoryMutation = useCreateCategoryMutation()
   const { data: bankAccountsData } = useBankAccounts()
   const { data: groupedCategoriesData, isLoading: categoriesLoading } = useGroupedCategoriesQuery()
@@ -83,12 +106,20 @@ export function ExpenseForm({ open, onOpenChange }: ExpenseFormProps) {
 
   const onSubmit = async (data: CreateExpenseRequest) => {
     try {
-      await createExpenseMutation.mutateAsync(data)
-      toast.success("Expense added successfully!")
+      if (editingExpense) {
+        await updateExpenseMutation.mutateAsync({
+          id: editingExpense.id,
+          data,
+        })
+        toast.success("Expense updated successfully!")
+      } else {
+        await createExpenseMutation.mutateAsync(data)
+        toast.success("Expense added successfully!")
+      }
       form.reset()
       onOpenChange(false)
     } catch (_error) {
-      toast.error("Failed to add expense")
+      toast.error(editingExpense ? "Failed to update expense" : "Failed to add expense")
     }
   }
 
@@ -122,9 +153,13 @@ export function ExpenseForm({ open, onOpenChange }: ExpenseFormProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] persona-modal">
         <DialogHeader>
-          <DialogTitle className="persona-title">Add New Expense</DialogTitle>
+          <DialogTitle className="persona-title">
+            {editingExpense ? "Edit Expense" : "Add New Expense"}
+          </DialogTitle>
           <DialogDescription>
-            Track a new expense and categorize it according to the 50/30/20 philosophy.
+            {editingExpense
+              ? "Update your expense and categorize it according to the 50/30/20 philosophy."
+              : "Track a new expense and categorize it according to the 50/30/20 philosophy."}
           </DialogDescription>
         </DialogHeader>
 
@@ -370,10 +405,16 @@ export function ExpenseForm({ open, onOpenChange }: ExpenseFormProps) {
               </Button>
               <Button
                 type="submit"
-                disabled={createExpenseMutation.isPending}
+                disabled={createExpenseMutation.isPending || updateExpenseMutation.isPending}
                 className="persona-glow bg-gradient-to-r from-primary to-accent"
               >
-                {createExpenseMutation.isPending ? "Adding..." : "Add Expense"}
+                {createExpenseMutation.isPending || updateExpenseMutation.isPending
+                  ? editingExpense
+                    ? "Updating..."
+                    : "Adding..."
+                  : editingExpense
+                    ? "Update Expense"
+                    : "Add Expense"}
               </Button>
             </DialogFooter>
           </form>

@@ -128,26 +128,30 @@ export function CategoriesManagement({ open, onOpenChange }: CategoriesManagemen
 
       {/* Search and Filter */}
       <Card className="persona-card">
-        <CardContent className="p-4">
+        <CardContent className="p-6">
           <div className="flex gap-4">
-            <Input
-              placeholder="Search categories..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="persona-input flex-1"
-            />
-            <select
-              value={selectedExpenseType}
-              onChange={(e) => setSelectedExpenseType(e.target.value)}
-              className="px-3 py-2 border rounded-md bg-background"
-            >
-              <option value="all">All Types</option>
-              {EXPENSE_TYPES.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.name}
-                </option>
-              ))}
-            </select>
+            <div className="flex-1">
+              <Input
+                placeholder="Search categories..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="persona-input"
+              />
+            </div>
+            <div className="w-48">
+              <select
+                value={selectedExpenseType}
+                onChange={(e) => setSelectedExpenseType(e.target.value)}
+                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="all">All Types</option>
+                {EXPENSE_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -202,59 +206,70 @@ export function CategoriesManagement({ open, onOpenChange }: CategoriesManagemen
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {expenseType.categories.map((category) => {
                       return (
-                        <div
+                        <Card
                           key={category.id}
-                          className="p-4 border rounded-lg hover:shadow-md transition-all duration-200 persona-hover"
+                          className="persona-card hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/30"
                         >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-sm">{category.name}</h4>
-                              <Badge
-                                variant="outline"
-                                className="text-xs mt-1"
-                                style={{
-                                  borderColor: color,
-                                  color: color,
-                                }}
-                              >
-                                {category.status}
-                              </Badge>
-                            </div>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild={true}>
-                                <Button variant="ghost" size="icon" className="h-6 w-6">
-                                  <MoreHorizontal className="h-3 w-3" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEditCategory(category)}>
-                                  <Edit className="h-3 w-3 mr-2" />
-                                  Edit
-                                </DropdownMenuItem>
-                                {category.status === "deleted" ? (
-                                  <DropdownMenuItem onClick={() => handleRestoreCategory(category)}>
-                                    <RotateCcw className="h-3 w-3 mr-2" />
-                                    Restore
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-base truncate">
+                                  {category.name}
+                                </h4>
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs mt-2"
+                                  style={{
+                                    backgroundColor: `${color}20`,
+                                    borderColor: color,
+                                    color: color,
+                                  }}
+                                >
+                                  {category.status}
+                                </Badge>
+                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild={true}>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 hover:bg-muted"
+                                  >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48">
+                                  <DropdownMenuItem onClick={() => handleEditCategory(category)}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Edit Category
                                   </DropdownMenuItem>
-                                ) : (
-                                  <>
-                                    <DropdownMenuSeparator />
+                                  {category.status === "deleted" ? (
                                     <DropdownMenuItem
-                                      className="text-destructive"
-                                      onClick={() => setDeletingCategory(category)}
+                                      onClick={() => handleRestoreCategory(category)}
                                     >
-                                      <Trash2 className="h-3 w-3 mr-2" />
-                                      Delete
+                                      <RotateCcw className="h-4 w-4 mr-2" />
+                                      Restore Category
                                     </DropdownMenuItem>
-                                  </>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </div>
+                                  ) : (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        className="text-destructive focus:text-destructive"
+                                        onClick={() => setDeletingCategory(category)}
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Delete Category
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </CardContent>
+                        </Card>
                       )
                     })}
                   </div>
@@ -282,14 +297,14 @@ export function CategoriesManagement({ open, onOpenChange }: CategoriesManagemen
     return (
       <>
         <Dialog open={open} onOpenChange={onOpenChange}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto persona-modal">
-            <DialogHeader>
-              <DialogTitle className="persona-title">Category Management</DialogTitle>
-              <DialogDescription>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden persona-modal">
+            <DialogHeader className="pb-4">
+              <DialogTitle className="persona-title text-2xl">Manage Categories</DialogTitle>
+              <DialogDescription className="text-base">
                 Organize your expenses into meaningful categories following the 50/30/20 philosophy.
               </DialogDescription>
             </DialogHeader>
-            <div className="mt-6">{content}</div>
+            <div className="overflow-y-auto max-h-[calc(90vh-120px)] pr-2">{content}</div>
           </DialogContent>
         </Dialog>
 
