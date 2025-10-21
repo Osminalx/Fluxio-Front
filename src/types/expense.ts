@@ -76,13 +76,20 @@ export interface Expense {
 
 // Summary response types (per API docs)
 export interface ExpenseSummary {
-  total: number
-  by_category: Record<string, number>
-  by_expense_type: {
-    needs: number
-    wants: number
-    savings: number
-  }
+  total_amount: number
+  total_count: number
+  average_amount: number
+  by_expense_type: Array<{
+    expense_type_name: string
+    total_amount: number
+    count: number
+  }>
+  top_categories: Array<{
+    category_name: string
+    expense_type_name: string
+    total_amount: number
+    count: number
+  }>
 }
 
 // Filter and query types

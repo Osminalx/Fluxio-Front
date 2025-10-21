@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useExpenseSummaryQuery } from "@/lib/expense-queries"
-import { EXPENSE_TYPE_NAMES, ExpenseTypeConverter, ExpenseTypeUtils } from "@/types/expense-type"
+import { EXPENSE_TYPE_NAMES, ExpenseTypeUtils } from "@/types/expense-type"
 import { CategoriesManagement } from "./categories-management"
 import { ExpenseForm } from "./expense-form"
 import { ExpenseSummary } from "./expense-summary"
@@ -57,12 +57,14 @@ export function ExpensesPage() {
           const color = ExpenseTypeUtils.getDisplayColor(expenseTypeName)
           const description = ExpenseTypeUtils.getDescription(expenseTypeName)
 
-          // Get the expense type value (needs/wants/savings) from the name
-          const expenseTypeValue = ExpenseTypeConverter.nameToValue(expenseTypeName)
-
           // Get actual spending for this expense type from summary
-          const totalSpent = summary?.by_expense_type?.[expenseTypeValue] || 0
-          const actualPercentage = summary?.total ? (totalSpent / summary.total) * 100 : 0
+          const expenseTypeData = summary?.by_expense_type?.find(
+            (item) => item.expense_type_name === expenseTypeName
+          )
+          const totalSpent = expenseTypeData?.total_amount || 0
+          const actualPercentage = summary?.total_amount
+            ? (totalSpent / summary.total_amount) * 100
+            : 0
 
           return (
             <Card
@@ -106,7 +108,7 @@ export function ExpensesPage() {
                       className="h-2 rounded-full transition-all duration-500"
                       style={{
                         backgroundColor: color,
-                        width: `${Math.min((totalSpent / (summary?.total || 1)) * 100, 100)}%`,
+                        width: `${Math.min((totalSpent / (summary?.total_amount || 1)) * 100, 100)}%`,
                       }}
                     />
                   </div>

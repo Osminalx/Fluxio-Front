@@ -4,13 +4,11 @@ import { DollarSign, TrendingDown, TrendingUp } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { useGroupedCategoriesQuery } from "@/lib/category-queries"
 import { useExpenseSummaryQuery } from "@/lib/expense-queries"
 import { EXPENSE_TYPES, ExpenseTypeUtils } from "@/types/expense-type"
 
 export function ExpenseSummary() {
   const { data: summary, isLoading: summaryLoading } = useExpenseSummaryQuery()
-  const { data: groupedCategories } = useGroupedCategoriesQuery()
   const isLoading = summaryLoading
 
   if (isLoading) {
@@ -58,7 +56,7 @@ export function ExpenseSummary() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(summary.total)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(summary.total_amount)}</div>
             <p className="text-xs text-muted-foreground">Total spending this period</p>
           </CardContent>
         </Card>
@@ -73,7 +71,10 @@ export function ExpenseSummary() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(summary.by_expense_type.needs)}
+              {formatCurrency(
+                summary.by_expense_type.find((item) => item.expense_type_name === "Needs")
+                  ?.total_amount || 0
+              )}
             </div>
             <p className="text-xs text-muted-foreground">Essential expenses</p>
           </CardContent>
@@ -85,9 +86,7 @@ export function ExpenseSummary() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {Object.keys(summary.by_category || {}).length}
-            </div>
+            <div className="text-2xl font-bold">{summary.top_categories.length}</div>
             <p className="text-xs text-muted-foreground">Active categories</p>
           </CardContent>
         </Card>
@@ -108,8 +107,12 @@ export function ExpenseSummary() {
               const color = ExpenseTypeUtils.getDisplayColor(expenseType.name)
 
               // Get actual spending for this expense type from the API
-              const totalSpent = summary.by_expense_type[expenseType.value]
-              const actualPercentage = summary.total > 0 ? (totalSpent / summary.total) * 100 : 0
+              const expenseTypeData = summary.by_expense_type.find(
+                (item) => item.expense_type_name === expenseType.name
+              )
+              const totalSpent = expenseTypeData?.total_amount || 0
+              const actualPercentage =
+                summary.total_amount > 0 ? (totalSpent / summary.total_amount) * 100 : 0
 
               const isOverBudget = actualPercentage > recommendedPercentage
               const difference = actualPercentage - recommendedPercentage
@@ -178,48 +181,38 @@ export function ExpenseSummary() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {Object.entries(summary.by_category || {})
-              .sort(([, amountA], [, amountB]) => amountB - amountA)
-              .slice(0, 5)
-              .map(([categoryId, amount]) => {
-                // Find the category details from groupedCategories
-                const category = groupedCategories
-                  ? Object.values(groupedCategories)
-                      .flat()
-                      .find((c) => c.id === categoryId)
-                  : null
+            {summary.top_categories.map((category, index) => {
+              const color = ExpenseTypeUtils.getDisplayColor(
+                category.expense_type_name as "Needs" | "Wants" | "Savings"
+              )
+              const percentage =
+                summary.total_amount > 0 ? (category.total_amount / summary.total_amount) * 100 : 0
 
-                const color = category
-                  ? ExpenseTypeUtils.getDisplayColorByValue(category.expense_type)
-                  : "#6b7280"
-
-                const percentage = summary.total > 0 ? (amount / summary.total) * 100 : 0
-
-                return (
-                  <div
-                    key={categoryId}
-                    className="flex items-center justify-between p-3 rounded-lg border"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-                      <div>
-                        <p className="font-medium">{category?.name || "Unknown Category"}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {category
-                            ? ExpenseTypeUtils.getDescriptionByValue(category.expense_type)
-                            : "N/A"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold">{formatCurrency(amount)}</p>
+              return (
+                <div
+                  key={`${category.category_name}-${index}`}
+                  className="flex items-center justify-between p-3 rounded-lg border"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+                    <div>
+                      <p className="font-medium">{category.category_name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {percentage.toFixed(1)}% of total
+                        {ExpenseTypeUtils.getDescription(
+                          category.expense_type_name as "Needs" | "Wants" | "Savings"
+                        )}
                       </p>
                     </div>
                   </div>
-                )
-              })}
+                  <div className="text-right">
+                    <p className="font-semibold">{formatCurrency(category.total_amount)}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {percentage.toFixed(1)}% of total
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </CardContent>
       </Card>
