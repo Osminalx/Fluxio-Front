@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useExpenseSummaryQuery } from "@/lib/expense-queries"
-import { EXPENSE_TYPE_NAMES, ExpenseTypeUtils } from "@/types/expense-type"
+import { EXPENSE_TYPE_NAMES, ExpenseTypeConverter, ExpenseTypeUtils } from "@/types/expense-type"
 import { CategoriesManagement } from "./categories-management"
 import { ExpenseForm } from "./expense-form"
 import { ExpenseSummary } from "./expense-summary"
@@ -57,11 +57,12 @@ export function ExpensesPage() {
           const color = ExpenseTypeUtils.getDisplayColor(expenseTypeName)
           const description = ExpenseTypeUtils.getDescription(expenseTypeName)
 
-          // Calculate actual spending for this expense type from summary
-          const categoryData =
-            summary?.by_category?.filter((cat) => cat.expense_type_name === expenseTypeName) || []
-          const totalSpent = categoryData.reduce((sum, cat) => sum + cat.total_amount, 0)
-          const totalExpenses = categoryData.reduce((sum, cat) => sum + cat.total_expenses, 0)
+          // Get the expense type value (needs/wants/savings) from the name
+          const expenseTypeValue = ExpenseTypeConverter.nameToValue(expenseTypeName)
+
+          // Get actual spending for this expense type from summary
+          const totalSpent = summary?.by_expense_type?.[expenseTypeValue] || 0
+          const actualPercentage = summary?.total ? (totalSpent / summary.total) * 100 : 0
 
           return (
             <Card
@@ -97,15 +98,15 @@ export function ExpensesPage() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Transactions</span>
-                    <span className="font-medium">{totalExpenses}</span>
+                    <span className="text-sm text-muted-foreground">Actual Percentage</span>
+                    <span className="font-medium">{actualPercentage.toFixed(1)}%</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
                     <div
                       className="h-2 rounded-full transition-all duration-500"
                       style={{
                         backgroundColor: color,
-                        width: `${Math.min((totalSpent / (summary?.total_amount || 1)) * 100, 100)}%`,
+                        width: `${Math.min((totalSpent / (summary?.total || 1)) * 100, 100)}%`,
                       }}
                     />
                   </div>

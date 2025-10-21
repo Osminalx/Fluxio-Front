@@ -159,7 +159,10 @@ export function ExpensesList() {
                   const expenseTypeColor = ExpenseTypeUtils.getDisplayColor(expenseTypeName)
 
                   return (
-                    <TableRow key={expense.id} className="persona-hover">
+                    <TableRow
+                      key={expense.id}
+                      className="hover:bg-muted/50 transition-colors duration-200"
+                    >
                       <TableCell className="font-medium">{formatDate(expense.date)}</TableCell>
                       <TableCell>
                         <div className="truncate">{expense.description || "N/A"}</div>

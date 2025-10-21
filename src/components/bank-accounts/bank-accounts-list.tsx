@@ -307,7 +307,7 @@ export function BankAccountsList({
               <CardContent className="pt-0">
                 <div className="space-y-4">
                   <div>
-                    <p className="text-2xl font-bold persona-title">
+                    <p className="text-2xl font-bold text-foreground">
                       {formatCurrency(account.balance)}
                     </p>
                     <p className="text-sm text-muted-foreground">Current Balance</p>

@@ -66,14 +66,10 @@ export function ExpenseForm({ open, onOpenChange }: ExpenseFormProps) {
 
   // Ensure data is always in the correct format
   const bankAccounts = Array.isArray(bankAccountsData) ? bankAccountsData : []
-  
+
   // Process grouped categories - ensure proper format
   const groupedCategories = groupedCategoriesData || { needs: [], wants: [], savings: [] }
-  
-  // Debug: Check what we're getting from the API
-  if (process.env.NODE_ENV === "development" && groupedCategoriesData) {
-    // eslint-disable-next-line no-console
-    console.log('Processed groupedCategories:', groupedCategories)
+
   // Validate structure - ensure each expense type key exists and initialize if missing
   if (!groupedCategories.needs) {
     groupedCategories.needs = []
