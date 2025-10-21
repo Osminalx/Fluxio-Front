@@ -1,97 +1,90 @@
 import { z } from "zod"
-import { type Status, statusSchema } from "./status"
 
-// Expense Type Names following the 50/30/20 financial philosophy
-export const EXPENSE_TYPE_NAMES = [
-  "Needs", // 50% - Essential expenses (housing, food, utilities, minimum debt payments)
-  "Wants", // 30% - Discretionary spending (entertainment, dining out, hobbies)
-  "Savings", // 20% - Savings and debt repayment beyond minimums
+// Fixed Expense Type Enum Values (backend enum)
+export const EXPENSE_TYPE_VALUES = [
+  "needs", // 50% - Essential expenses (housing, food, utilities, minimum debt payments)
+  "wants", // 30% - Discretionary spending (entertainment, dining out, hobbies)
+  "savings", // 20% - Savings and debt repayment beyond minimums
 ] as const
 
-// Zod schema for expense type name validation
+// Display Names for UI
+export const EXPENSE_TYPE_NAMES = [
+  "Needs", // Display name for "needs"
+  "Wants", // Display name for "wants"
+  "Savings", // Display name for "savings"
+] as const
+
+// Fixed Expense Types Configuration
+export const EXPENSE_TYPES = [
+  { value: "needs", name: "Needs", description: "Essential expenses", percentage: 50 },
+  { value: "wants", name: "Wants", description: "Non-essential expenses", percentage: 30 },
+  { value: "savings", name: "Savings", description: "Savings & investments", percentage: 20 },
+] as const
+
+// Zod schemas for validation
+export const expenseTypeValueSchema = z.enum(EXPENSE_TYPE_VALUES)
 export const expenseTypeNameSchema = z.enum(EXPENSE_TYPE_NAMES)
 
-// TypeScript type for expense type name
+// TypeScript types
+export type ExpenseTypeValue = z.infer<typeof expenseTypeValueSchema>
 export type ExpenseTypeName = z.infer<typeof expenseTypeNameSchema>
 
-// Zod Schemas for validation
-export const expenseTypeSchema = z.object({
-  id: z.string().uuid(),
-  name: expenseTypeNameSchema,
-  status: statusSchema,
-  created_at: z.string(),
-  updated_at: z.string(),
-})
+// Helper functions to convert between value and name
+export const ExpenseTypeConverter = {
+  // Convert enum value to display name
+  valueToName: (value: ExpenseTypeValue): ExpenseTypeName => {
+    switch (value) {
+      case "needs":
+        return "Needs"
+      case "wants":
+        return "Wants"
+      case "savings":
+        return "Savings"
+      default:
+        throw new Error(`Unknown expense type value: ${value}`)
+    }
+  },
 
-// API Response types
-export interface ExpenseType {
-  id: string
-  name: ExpenseTypeName
-  status: Status
-  created_at: string
-  updated_at: string
-}
+  // Convert display name to enum value
+  nameToValue: (name: ExpenseTypeName): ExpenseTypeValue => {
+    switch (name) {
+      case "Needs":
+        return "needs"
+      case "Wants":
+        return "wants"
+      case "Savings":
+        return "savings"
+      default:
+        throw new Error(`Unknown expense type name: ${name}`)
+    }
+  },
 
-// For expense types with categories included
-export interface ExpenseTypeWithCategories extends ExpenseType {
-  categories: CategoryBase[]
-}
+  // Get expense type config by value
+  getByValue: (value: ExpenseTypeValue) => {
+    return EXPENSE_TYPES.find((type) => type.value === value)
+  },
 
-export interface ExpenseTypesResponse {
-  expense_types: ExpenseType[]
-  count: number
-}
-
-export interface ExpenseTypesWithCategoriesResponse {
-  expense_types: ExpenseTypeWithCategories[]
-  count: number
-}
-
-// Forward declaration to avoid circular imports
-// The full Category interface is defined in category.ts
-export interface CategoryBase {
-  id: string
-  name: string
-  status: Status
-  expense_type_id: string
-  created_at: string
-  updated_at: string
-  status_changed_at: string
-}
-
-// Filter and query types
-export interface ExpenseTypeFilters {
-  name?: ExpenseTypeName
-  status?: Status
-  include_categories?: boolean
-}
-
-// State management types
-export interface ExpenseTypeState {
-  expenseTypes: ExpenseType[]
-  expenseTypesWithCategories: ExpenseTypeWithCategories[]
-  selectedExpenseType: ExpenseType | null
-  isLoading: boolean
-  error: string | null
+  // Get expense type config by name
+  getByName: (name: ExpenseTypeName) => {
+    return EXPENSE_TYPES.find((type) => type.name === name)
+  },
 }
 
 // Utility functions for the 50/30/20 financial philosophy
 export const ExpenseTypeUtils = {
-  // Get the recommended percentage for each expense type
+  // Get the recommended percentage for each expense type (by name)
   getRecommendedPercentage: (expenseTypeName: ExpenseTypeName): number => {
-    switch (expenseTypeName) {
-      case "Needs":
-        return 50
-      case "Wants":
-        return 30
-      case "Savings":
-        return 20
-      default:
-        return 0
-    }
+    const config = ExpenseTypeConverter.getByName(expenseTypeName)
+    return config?.percentage || 0
   },
 
-  // Get display color for each expense type
+  // Get the recommended percentage for each expense type (by value)
+  getRecommendedPercentageByValue: (expenseTypeValue: ExpenseTypeValue): number => {
+    const config = ExpenseTypeConverter.getByValue(expenseTypeValue)
+    return config?.percentage || 0
+  },
+
+  // Get display color for each expense type (by name)
   getDisplayColor: (expenseTypeName: ExpenseTypeName): string => {
     switch (expenseTypeName) {
       case "Needs":
@@ -105,27 +98,46 @@ export const ExpenseTypeUtils = {
     }
   },
 
-  // Get description for each expense type
-  getDescription: (expenseTypeName: ExpenseTypeName): string => {
-    switch (expenseTypeName) {
-      case "Needs":
-        return "Essential expenses like housing, food, utilities, and minimum debt payments"
-      case "Wants":
-        return "Discretionary spending like entertainment, dining out, and hobbies"
-      case "Savings":
-        return "Savings and debt repayment beyond minimum requirements"
-      default:
-        return "Unknown expense type"
-    }
+  // Get display color for each expense type (by value)
+  getDisplayColorByValue: (expenseTypeValue: ExpenseTypeValue): string => {
+    const name = ExpenseTypeConverter.valueToName(expenseTypeValue)
+    return ExpenseTypeUtils.getDisplayColor(name)
   },
 
-  // Check if expense type is essential
+  // Get description for each expense type (by name)
+  getDescription: (expenseTypeName: ExpenseTypeName): string => {
+    const config = ExpenseTypeConverter.getByName(expenseTypeName)
+    return config?.description || "Unknown expense type"
+  },
+
+  // Get description for each expense type (by value)
+  getDescriptionByValue: (expenseTypeValue: ExpenseTypeValue): string => {
+    const config = ExpenseTypeConverter.getByValue(expenseTypeValue)
+    return config?.description || "Unknown expense type"
+  },
+
+  // Check if expense type is essential (by name)
   isEssential: (expenseTypeName: ExpenseTypeName): boolean => {
     return expenseTypeName === "Needs"
+  },
+
+  // Check if expense type is essential (by value)
+  isEssentialByValue: (expenseTypeValue: ExpenseTypeValue): boolean => {
+    return expenseTypeValue === "needs"
   },
 
   // Get all expense type names
   getAllNames: (): ExpenseTypeName[] => {
     return [...EXPENSE_TYPE_NAMES]
+  },
+
+  // Get all expense type values
+  getAllValues: (): ExpenseTypeValue[] => {
+    return [...EXPENSE_TYPE_VALUES]
+  },
+
+  // Get all expense type configs
+  getAllTypes: () => {
+    return [...EXPENSE_TYPES]
   },
 }

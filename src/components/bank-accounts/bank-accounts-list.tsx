@@ -200,7 +200,8 @@ export function BankAccountsList({
     )
   }
 
-  const allAccounts = accountsData?.bank_accounts || []
+  // Ensure accountsData is always an array
+  const allAccounts = Array.isArray(accountsData) ? accountsData : []
 
   // Filter accounts based on showDeleted prop
   const accounts = showDeleted

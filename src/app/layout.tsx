@@ -4,6 +4,7 @@ import "./globals.css"
 import { AuthInitializer } from "@/components/auth/auth-initializer"
 import { AuthWrapper } from "@/components/auth/auth-wrapper"
 import { TanstackProvider } from "@/components/providers/tanstack-provider"
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -44,6 +45,7 @@ export default function RootLayout({
           <AuthInitializer>
             <AuthWrapper>{children}</AuthWrapper>
           </AuthInitializer>
+          <Toaster />
         </TanstackProvider>
       </body>
     </html>

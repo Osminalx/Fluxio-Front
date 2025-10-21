@@ -21,20 +21,16 @@ export type CreateBankAccountRequest = z.infer<typeof createBankAccountSchema>
 export type UpdateBankAccountRequest = z.infer<typeof updateBankAccountSchema>
 export type BankAccountStatusRequest = z.infer<typeof bankAccountStatusSchema>
 
-// API Response types
+// API Response types (per API docs)
 export interface BankAccount {
   id: string
+  user_id: string
   account_name: string
   balance: number
   status: Status
+  status_changed_at: string | null
   created_at: string
   updated_at: string
-  status_changed_at: string
-}
-
-export interface BankAccountsResponse {
-  bank_accounts: BankAccount[]
-  count: number
 }
 
 // Bank account state types

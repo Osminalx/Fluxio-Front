@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   CategoryStatusRequest,
   CreateCategoryRequest,
-  DefaultCategoriesRequest,
   UpdateCategoryRequest,
 } from "@/types/category"
 import { categoryApi } from "./category-api"
@@ -16,8 +15,8 @@ export const categoryKeys = {
   detail: (id: string) => [...categoryKeys.details(), id] as const,
   grouped: () => [...categoryKeys.all, "grouped"] as const,
   stats: () => [...categoryKeys.all, "stats"] as const,
-  byExpenseType: (expenseTypeId: string) =>
-    [...categoryKeys.all, "expense-type", expenseTypeId] as const,
+  byExpenseType: (expenseType: string) =>
+    [...categoryKeys.all, "expense-type", expenseType] as const,
   byExpenseTypeName: (expenseTypeName: string) =>
     [...categoryKeys.all, "expense-type-name", expenseTypeName] as const,
 }
@@ -52,11 +51,11 @@ export const useCategoryStatsQuery = () => {
   })
 }
 
-export const useCategoriesByExpenseTypeQuery = (expenseTypeId: string) => {
+export const useCategoriesByExpenseTypeQuery = (expenseType: string) => {
   return useQuery({
-    queryKey: categoryKeys.byExpenseType(expenseTypeId),
-    queryFn: () => categoryApi.getByExpenseTypeId(expenseTypeId),
-    enabled: !!expenseTypeId,
+    queryKey: categoryKeys.byExpenseType(expenseType),
+    queryFn: () => categoryApi.getByExpenseType(expenseType),
+    enabled: !!expenseType,
   })
 }
 
@@ -133,10 +132,9 @@ export const useCreateDefaultCategoriesMutation = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data: DefaultCategoriesRequest) => categoryApi.createDefaults(data),
+    mutationFn: () => categoryApi.createDefaults(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.all })
     },
   })
 }
-

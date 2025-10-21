@@ -18,7 +18,6 @@ export function ExpensesPage() {
   const [showCategoriesManagement, setShowCategoriesManagement] = useState(false)
 
   const { data: summary } = useExpenseSummaryQuery()
-  // const { data: expenseTypesWithCategories } = useExpenseTypesWithCategoriesQuery()
 
   return (
     <div className="space-y-6 p-6">
@@ -60,7 +59,7 @@ export function ExpensesPage() {
 
           // Calculate actual spending for this expense type from summary
           const categoryData =
-            summary?.by_category.filter((cat) => cat.expense_type_name === expenseTypeName) || []
+            summary?.by_category?.filter((cat) => cat.expense_type_name === expenseTypeName) || []
           const totalSpent = categoryData.reduce((sum, cat) => sum + cat.total_amount, 0)
           const totalExpenses = categoryData.reduce((sum, cat) => sum + cat.total_expenses, 0)
 

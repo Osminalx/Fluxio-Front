@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -32,11 +33,10 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { useBankAccounts } from "@/lib/bank-account-queries"
-import { useCreateCategoryMutation } from "@/lib/category-queries"
+import { useCreateCategoryMutation, useGroupedCategoriesQuery } from "@/lib/category-queries"
 import { useCreateExpenseMutation } from "@/lib/expense-queries"
-import { useExpenseTypesWithCategoriesQuery } from "@/lib/expense-type-queries"
 import { type CreateExpenseRequest, createExpenseSchema } from "@/types/expense"
-import { ExpenseTypeUtils } from "@/types/expense-type"
+import { EXPENSE_TYPES, ExpenseTypeUtils, type ExpenseTypeValue } from "@/types/expense-type"
 
 interface ExpenseFormProps {
   open: boolean
@@ -46,7 +46,7 @@ interface ExpenseFormProps {
 export function ExpenseForm({ open, onOpenChange }: ExpenseFormProps) {
   const [showNewCategoryForm, setShowNewCategoryForm] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState("")
-  const [selectedExpenseTypeId, setSelectedExpenseTypeId] = useState<string>("")
+  const [selectedExpenseType, setSelectedExpenseType] = useState<ExpenseTypeValue | "">("")
 
   const form = useForm<CreateExpenseRequest>({
     resolver: zodResolver(createExpenseSchema),
@@ -62,41 +62,63 @@ export function ExpenseForm({ open, onOpenChange }: ExpenseFormProps) {
   const createExpenseMutation = useCreateExpenseMutation()
   const createCategoryMutation = useCreateCategoryMutation()
   const { data: bankAccountsData } = useBankAccounts()
-  const { data: expenseTypesData } = useExpenseTypesWithCategoriesQuery()
+  const { data: groupedCategoriesData, isLoading: categoriesLoading } = useGroupedCategoriesQuery()
 
-  const bankAccounts = bankAccountsData?.bank_accounts || []
-  const expenseTypes = expenseTypesData?.expense_types || []
+  // Ensure data is always in the correct format
+  const bankAccounts = Array.isArray(bankAccountsData) ? bankAccountsData : []
+  
+  // Process grouped categories - ensure proper format
+  const groupedCategories = groupedCategoriesData || { needs: [], wants: [], savings: [] }
+  
+  // Debug: Check what we're getting from the API
+  if (process.env.NODE_ENV === "development" && groupedCategoriesData) {
+    // eslint-disable-next-line no-console
+    console.log('Processed groupedCategories:', groupedCategories)
+  // Validate structure - ensure each expense type key exists and initialize if missing
+  if (!groupedCategories.needs) {
+    groupedCategories.needs = []
+  }
+  if (!groupedCategories.wants) {
+    groupedCategories.wants = []
+  }
+  if (!groupedCategories.savings) {
+    groupedCategories.savings = []
+  }
 
   const onSubmit = async (data: CreateExpenseRequest) => {
     try {
       await createExpenseMutation.mutateAsync(data)
+      toast.success("Expense added successfully!")
       form.reset()
       onOpenChange(false)
     } catch (_error) {
-      // Handle error silently or show user notification
+      toast.error("Failed to add expense")
     }
   }
 
   const handleCreateCategory = async () => {
-    if (!newCategoryName.trim() || !selectedExpenseTypeId) {
+    if (!newCategoryName.trim() || !selectedExpenseType) {
+      toast.error("Please fill in all category fields")
       return
     }
 
     try {
       const newCategory = await createCategoryMutation.mutateAsync({
         name: newCategoryName.trim(),
-        expense_type_id: selectedExpenseTypeId,
+        expense_type: selectedExpenseType,
       })
 
       // Set the new category as selected
       form.setValue("category_id", newCategory.id)
 
+      toast.success(`Category "${newCategoryName}" created successfully!`)
+
       // Reset form state
       setNewCategoryName("")
-      setSelectedExpenseTypeId("")
+      setSelectedExpenseType("")
       setShowNewCategoryForm(false)
     } catch (_error) {
-      // Handle error silently or show user notification
+      toast.error("Failed to create category")
     }
   }
 
@@ -165,18 +187,16 @@ export function ExpenseForm({ open, onOpenChange }: ExpenseFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {bankAccounts.map(
-                        (account: { id: string; account_name: string; balance: number }) => (
-                          <SelectItem key={account.id} value={account.id}>
-                            <div className="flex items-center justify-between w-full">
-                              <span>{account.account_name}</span>
-                              <span className="text-sm text-muted-foreground ml-2">
-                                ${account.balance.toLocaleString()}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        )
-                      )}
+                      {bankAccounts.map((account) => (
+                        <SelectItem key={account.id} value={account.id}>
+                          <div className="flex items-center justify-between w-full">
+                            <span>{account.account_name}</span>
+                            <span className="text-sm text-muted-foreground ml-2">
+                              ${account.balance.toLocaleString()}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -210,25 +230,45 @@ export function ExpenseForm({ open, onOpenChange }: ExpenseFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {expenseTypes.map((expenseType) => (
-                        <div key={expenseType.id}>
-                          <div className="px-2 py-1 text-sm font-semibold text-muted-foreground flex items-center gap-2">
-                            <div
-                              className="w-2 h-2 rounded-full"
-                              style={{
-                                backgroundColor: ExpenseTypeUtils.getDisplayColor(expenseType.name),
-                              }}
-                            />
-                            {expenseType.name} (
-                            {ExpenseTypeUtils.getRecommendedPercentage(expenseType.name)}%)
-                          </div>
-                          {expenseType.categories.map((category) => (
-                            <SelectItem key={category.id} value={category.id} className="pl-6">
-                              {category.name}
-                            </SelectItem>
-                          ))}
+                      {categoriesLoading ? (
+                        <div className="p-4 text-center text-sm text-muted-foreground">
+                          Loading categories...
                         </div>
-                      ))}
+                      ) : (
+                        EXPENSE_TYPES.map((expenseType) => {
+                          const categories = groupedCategories[expenseType.value] || []
+                          return (
+                            <div key={expenseType.value}>
+                              <div className="px-2 py-1 text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                                <div
+                                  className="w-2 h-2 rounded-full"
+                                  style={{
+                                    backgroundColor: ExpenseTypeUtils.getDisplayColor(
+                                      expenseType.name
+                                    ),
+                                  }}
+                                />
+                                {expenseType.name} ({expenseType.percentage}%)
+                              </div>
+                              {categories.length === 0 ? (
+                                <div className="pl-6 py-2 text-xs text-muted-foreground italic">
+                                  No categories yet
+                                </div>
+                              ) : (
+                                categories.map((category) => (
+                                  <SelectItem
+                                    key={category.id}
+                                    value={category.id}
+                                    className="pl-6"
+                                  >
+                                    {category.name}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </div>
+                          )
+                        })
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -254,13 +294,15 @@ export function ExpenseForm({ open, onOpenChange }: ExpenseFormProps) {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs">Expense Type</Label>
-                    <Select onValueChange={setSelectedExpenseTypeId}>
+                    <Select
+                      onValueChange={(value: ExpenseTypeValue) => setSelectedExpenseType(value)}
+                    >
                       <SelectTrigger className="h-8">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {expenseTypes.map((expenseType) => (
-                          <SelectItem key={expenseType.id} value={expenseType.id}>
+                        {EXPENSE_TYPES.map((expenseType) => (
+                          <SelectItem key={expenseType.value} value={expenseType.value}>
                             <div className="flex items-center gap-2">
                               <div
                                 className="w-2 h-2 rounded-full"
@@ -293,7 +335,7 @@ export function ExpenseForm({ open, onOpenChange }: ExpenseFormProps) {
                   type="button"
                   size="sm"
                   onClick={handleCreateCategory}
-                  disabled={!newCategoryName.trim() || !selectedExpenseTypeId}
+                  disabled={!newCategoryName.trim() || !selectedExpenseType}
                   className="w-full"
                 >
                   Create Category

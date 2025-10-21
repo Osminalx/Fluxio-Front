@@ -5,16 +5,23 @@ import type {
   ExpenseFilters,
   ExpenseStatusRequest,
   ExpenseSummary,
-  ExpensesResponse,
   MonthlyQuery,
   UpdateExpenseRequest,
 } from "@/types/expense"
 import { apiClient } from "./api"
 
+// Helper to normalize expense response (handle both array and wrapped formats)
+const normalizeExpensesResponse = (response: Expense[] | { expenses: Expense[] }): Expense[] => {
+  if (Array.isArray(response)) {
+    return response
+  }
+  return (response as { expenses: Expense[] }).expenses || []
+}
+
 // Expense API endpoints
 export const expenseApi = {
   // Get all expenses
-  getAll: async (filters?: ExpenseFilters): Promise<ExpensesResponse> => {
+  getAll: async (filters?: ExpenseFilters): Promise<Expense[]> => {
     const params = new URLSearchParams()
     if (filters?.bank_account_id) {
       params.append("bank_account_id", filters.bank_account_id)
@@ -35,8 +42,10 @@ export const expenseApi = {
       params.append("include_deleted", filters.include_deleted.toString())
     }
 
-    const response = await apiClient.get<ExpensesResponse>(`/api/v1/expenses?${params.toString()}`)
-    return response
+    const response = await apiClient.get<Expense[] | { expenses: Expense[] }>(
+      `/api/v1/expenses?${params.toString()}`
+    )
+    return normalizeExpensesResponse(response)
   },
 
   // Create new expense
@@ -46,29 +55,31 @@ export const expenseApi = {
   },
 
   // Get active expenses only
-  getActive: async (): Promise<ExpensesResponse> => {
-    const response = await apiClient.get<ExpensesResponse>("/api/v1/expenses/active")
-    return response
+  getActive: async (): Promise<Expense[]> => {
+    const response = await apiClient.get<Expense[] | { expenses: Expense[] }>(
+      "/api/v1/expenses/active"
+    )
+    return normalizeExpensesResponse(response)
   },
 
   // Get expenses by bank account
-  getByBankAccount: async (bankAccountId: string): Promise<ExpensesResponse> => {
-    const response = await apiClient.get<ExpensesResponse>(
+  getByBankAccount: async (bankAccountId: string): Promise<Expense[]> => {
+    const response = await apiClient.get<Expense[] | { expenses: Expense[] }>(
       `/api/v1/expenses/bank-account/${bankAccountId}`
     )
-    return response
+    return normalizeExpensesResponse(response)
   },
 
   // Get expenses by category
-  getByCategory: async (categoryId: string): Promise<ExpensesResponse> => {
-    const response = await apiClient.get<ExpensesResponse>(
+  getByCategory: async (categoryId: string): Promise<Expense[]> => {
+    const response = await apiClient.get<Expense[] | { expenses: Expense[] }>(
       `/api/v1/expenses/category/${categoryId}`
     )
-    return response
+    return normalizeExpensesResponse(response)
   },
 
   // Get expenses by date range
-  getByDateRange: async (query: DateRangeQuery): Promise<ExpensesResponse> => {
+  getByDateRange: async (query: DateRangeQuery): Promise<Expense[]> => {
     const params = new URLSearchParams({
       start_date: query.start_date,
       end_date: query.end_date,
@@ -80,20 +91,22 @@ export const expenseApi = {
       params.append("category_id", query.category_id)
     }
 
-    const response = await apiClient.get<ExpensesResponse>(
+    const response = await apiClient.get<Expense[] | { expenses: Expense[] }>(
       `/api/v1/expenses/date-range?${params.toString()}`
     )
-    return response
+    return normalizeExpensesResponse(response)
   },
 
   // Get deleted expenses
-  getDeleted: async (): Promise<ExpensesResponse> => {
-    const response = await apiClient.get<ExpensesResponse>("/api/v1/expenses/deleted")
-    return response
+  getDeleted: async (): Promise<Expense[]> => {
+    const response = await apiClient.get<Expense[] | { expenses: Expense[] }>(
+      "/api/v1/expenses/deleted"
+    )
+    return normalizeExpensesResponse(response)
   },
 
   // Get monthly expenses
-  getMonthly: async (query: MonthlyQuery): Promise<ExpensesResponse> => {
+  getMonthly: async (query: MonthlyQuery): Promise<Expense[]> => {
     const params = new URLSearchParams({
       year: query.year.toString(),
       month: query.month.toString(),
@@ -105,10 +118,10 @@ export const expenseApi = {
       params.append("category_id", query.category_id)
     }
 
-    const response = await apiClient.get<ExpensesResponse>(
+    const response = await apiClient.get<Expense[] | { expenses: Expense[] }>(
       `/api/v1/expenses/monthly?${params.toString()}`
     )
-    return response
+    return normalizeExpensesResponse(response)
   },
 
   // Get expense summary/analytics

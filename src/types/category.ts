@@ -1,15 +1,15 @@
 import { z } from "zod"
-import type { ExpenseType } from "./expense-type"
+import { type ExpenseTypeValue, expenseTypeValueSchema } from "./expense-type"
 import { type Status, statusSchema } from "./status"
 
 // Zod Schemas for validation
 export const createCategorySchema = z.object({
-  expense_type_id: z.string().uuid("Invalid expense type ID"),
+  expense_type: expenseTypeValueSchema,
   name: z.string().min(1, "Category name is required"),
 })
 
 export const updateCategorySchema = z.object({
-  expense_type_id: z.string().uuid("Invalid expense type ID").optional(),
+  expense_type: expenseTypeValueSchema.optional(),
   name: z.string().min(1, "Category name is required").optional(),
 })
 
@@ -22,47 +22,40 @@ export type CreateCategoryRequest = z.infer<typeof createCategorySchema>
 export type UpdateCategoryRequest = z.infer<typeof updateCategorySchema>
 export type CategoryStatusRequest = z.infer<typeof categoryStatusSchema>
 
-// API Response types
+// API Response types (per API docs)
 export interface Category {
   id: string
+  user_id: string
   name: string
+  expense_type: ExpenseTypeValue // enum value ("needs", "wants", "savings")
   status: Status
-  expense_type_id: string
-  expense_type: ExpenseType
+  status_changed_at: string | null
   created_at: string
   updated_at: string
-  status_changed_at: string
-}
-
-export interface CategoriesResponse {
-  categories: Category[]
-  count: number
 }
 
 // Grouped categories response (for /grouped endpoint)
+// API returns with lowercase keys: needs, wants, savings
 export interface GroupedCategoriesResponse {
-  [expenseTypeName: string]: Category[]
+  needs: Category[]
+  wants: Category[]
+  savings: Category[]
 }
 
 // Category statistics response (for /stats endpoint)
-export interface CategoryStats {
-  category_id: string
-  category_name: string
-  expense_type_name: string
-  total_expenses: number
-  total_amount: number
-  average_amount: number
-  last_expense_date: string | null
-}
-
 export interface CategoryStatsResponse {
-  stats: CategoryStats[]
-  count: number
+  total_categories: number
+  by_expense_type: {
+    needs: number
+    wants: number
+    savings: number
+  }
+  most_used: Category
 }
 
 // Filter and query types
 export interface CategoryFilters {
-  expense_type_id?: string
+  expense_type?: ExpenseTypeValue
   expense_type_name?: string
   status?: Status
   include_deleted?: boolean
@@ -72,7 +65,7 @@ export interface CategoryFilters {
 export interface CategoryState {
   categories: Category[]
   groupedCategories: GroupedCategoriesResponse
-  categoryStats: CategoryStats[]
+  categoryStats: CategoryStatsResponse | null
   selectedCategory: Category | null
   isLoading: boolean
   error: string | null
@@ -81,8 +74,4 @@ export interface CategoryState {
 // Utility types for category operations
 export interface CategoryWithExpenseCount extends Category {
   expense_count: number
-}
-
-export interface DefaultCategoriesRequest {
-  expense_type_ids: string[]
 }

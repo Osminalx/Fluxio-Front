@@ -110,20 +110,13 @@ export function useDeleteBankAccount() {
 
       // Optimistically update all list queries by marking the account as deleted
       queryClient.setQueriesData({ queryKey: bankAccountKeys.lists() }, (old: unknown) => {
-        if (!old || typeof old !== "object" || !("bank_accounts" in old)) {
+        if (!Array.isArray(old)) {
           return old
         }
 
-        const data = old as {
-          bank_accounts: Array<{ id: string; status: Status; [key: string]: unknown }>
-        }
-
-        return {
-          ...data,
-          bank_accounts: data.bank_accounts.map((account) =>
-            account.id === id ? { ...account, status: "deleted" } : account
-          ),
-        }
+        return old.map((account: { id: string; status: Status; [key: string]: unknown }) =>
+          account.id === id ? { ...account, status: "deleted" as Status } : account
+        )
       })
 
       // Return a context object with the snapshotted value
@@ -161,20 +154,13 @@ export function useRestoreBankAccount() {
 
       // Optimistically update all list queries by marking the account as active
       queryClient.setQueriesData({ queryKey: bankAccountKeys.lists() }, (old: unknown) => {
-        if (!old || typeof old !== "object" || !("bank_accounts" in old)) {
+        if (!Array.isArray(old)) {
           return old
         }
 
-        const data = old as {
-          bank_accounts: Array<{ id: string; status: Status; [key: string]: unknown }>
-        }
-
-        return {
-          ...data,
-          bank_accounts: data.bank_accounts.map((account) =>
-            account.id === id ? { ...account, status: "active" } : account
-          ),
-        }
+        return old.map((account: { id: string; status: Status; [key: string]: unknown }) =>
+          account.id === id ? { ...account, status: "active" as Status } : account
+        )
       })
 
       // Return a context object with the snapshotted value
@@ -187,18 +173,13 @@ export function useRestoreBankAccount() {
 
         // Update the optimistic data with the real data
         queryClient.setQueriesData({ queryKey: bankAccountKeys.lists() }, (old: unknown) => {
-          if (!old || typeof old !== "object" || !("bank_accounts" in old)) {
+          if (!Array.isArray(old)) {
             return old
           }
 
-          const data = old as { bank_accounts: Array<{ id: string; [key: string]: unknown }> }
-
-          return {
-            ...data,
-            bank_accounts: data.bank_accounts.map((account) =>
-              account.id === id ? restoredAccount : account
-            ),
-          }
+          return old.map((account: { id: string; [key: string]: unknown }) =>
+            account.id === id ? restoredAccount : account
+          )
         })
       }
     },
