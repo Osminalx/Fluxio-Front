@@ -1,12 +1,21 @@
 "use client"
 
-import { ArrowLeft, DollarSign, Edit, Trash2, TrendingUp } from "lucide-react"
+import { ArrowLeft, DollarSign, Edit, History, Trash2, TrendingUp } from "lucide-react"
 import { useState } from "react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ConfirmationModal } from "@/components/ui/confirmation-modal"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { useBudgetHistoryByBudgetId } from "@/lib/budget-history-queries"
 import { useDeleteBudget } from "@/lib/budget-queries"
 import type { Budget } from "@/types/budgets"
 import { BudgetForm } from "./budget-form"
@@ -21,6 +30,7 @@ export function BudgetDetails({ budget, onBack }: BudgetDetailsProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const deleteMutation = useDeleteBudget()
+  const { data: budgetHistory, isLoading: historyLoading } = useBudgetHistoryByBudgetId(budget.id)
 
   const handleDelete = async () => {
     try {
@@ -278,6 +288,93 @@ export function BudgetDetails({ budget, onBack }: BudgetDetailsProps) {
               <div className="font-mono text-sm">{budget.id}</div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Budget History */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <History className="h-5 w-5" />
+            Change History
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {historyLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            </div>
+          ) : !budgetHistory?.budget_history || budgetHistory.budget_history.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No changes recorded for this budget.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Changed At</TableHead>
+                    <TableHead>Field</TableHead>
+                    <TableHead>Old Value</TableHead>
+                    <TableHead>New Value</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {budgetHistory.budget_history.slice(0, 5).map((entry) => (
+                    <>
+                      {entry.old_needs_budget !== entry.new_needs_budget && (
+                        <TableRow key={`${entry.id}-needs`}>
+                          <TableCell className="font-medium">
+                            {formatDate(entry.changed_at)}
+                          </TableCell>
+                          <TableCell>Needs Budget</TableCell>
+                          <TableCell>{formatCurrency(entry.old_needs_budget)}</TableCell>
+                          <TableCell>{formatCurrency(entry.new_needs_budget)}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {entry.change_reason || "—"}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      {entry.old_wants_budget !== entry.new_wants_budget && (
+                        <TableRow key={`${entry.id}-wants`}>
+                          <TableCell className="font-medium">
+                            {formatDate(entry.changed_at)}
+                          </TableCell>
+                          <TableCell>Wants Budget</TableCell>
+                          <TableCell>{formatCurrency(entry.old_wants_budget)}</TableCell>
+                          <TableCell>{formatCurrency(entry.new_wants_budget)}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {entry.change_reason || "—"}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      {entry.old_savings_budget !== entry.new_savings_budget && (
+                        <TableRow key={`${entry.id}-savings`}>
+                          <TableCell className="font-medium">
+                            {formatDate(entry.changed_at)}
+                          </TableCell>
+                          <TableCell>Savings Budget</TableCell>
+                          <TableCell>{formatCurrency(entry.old_savings_budget)}</TableCell>
+                          <TableCell>{formatCurrency(entry.new_savings_budget)}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {entry.change_reason || "—"}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
+                  ))}
+                </TableBody>
+              </Table>
+              {budgetHistory.budget_history.length > 5 && (
+                <div className="text-center pt-4">
+                  <p className="text-sm text-muted-foreground">
+                    Showing 5 of {budgetHistory.budget_history.length} changes
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 

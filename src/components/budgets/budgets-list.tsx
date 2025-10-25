@@ -37,7 +37,8 @@ export function BudgetsList({ onBudgetSelect }: BudgetsListProps) {
   const [restoreConfirmId, setRestoreConfirmId] = useState<string | null>(null)
 
   // Queries
-  const { data: allBudgets, isLoading: allLoading } = useBudgets()
+  // biome-ignore lint/style/useNamingConvention: API uses snake_case
+  const { data: allBudgets, isLoading: allLoading } = useBudgets({ include_deleted: true })
   const { data: activeBudgets, isLoading: activeLoading } = useActiveBudgets()
   const { data: deletedBudgets, isLoading: deletedLoading } = useDeletedBudgets()
 

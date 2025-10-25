@@ -2,7 +2,7 @@ import { z } from "zod"
 import { type Status, statusSchema } from "./status"
 
 export const createBudgetSchema = z.object({
-  month_year: z.iso.date(),
+  month_year: z.string().regex(/^\d{4}-\d{2}$/, "Month must be in YYYY-MM format"),
   needs_budget: z.number(),
   savings_budget: z.number(),
   wants_budget: z.number(),
