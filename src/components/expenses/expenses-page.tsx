@@ -1,7 +1,9 @@
 "use client"
 
-import { DollarSign, Filter, Plus, TrendingUp } from "lucide-react"
+import { Calendar, DollarSign, Filter, Plus, TrendingUp } from "lucide-react"
 import { useState } from "react"
+import { FixedExpenseForm } from "@/components/fixed-expenses/fixed-expense-form"
+import { FixedExpensesList } from "@/components/fixed-expenses/fixed-expenses-list"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,6 +17,8 @@ import { ExpensesList } from "./expenses-list"
 
 export function ExpensesPage() {
   const [showExpenseForm, setShowExpenseForm] = useState(false)
+  const [showFixedExpenseForm, setShowFixedExpenseForm] = useState(false)
+  const [activeTab, setActiveTab] = useState("expenses")
 
   const { data: summary } = useExpenseSummaryQuery()
 
@@ -31,13 +35,23 @@ export function ExpensesPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button
-            onClick={() => setShowExpenseForm(true)}
-            className="persona-glow bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Expense
-          </Button>
+          {activeTab === "fixed-expenses" ? (
+            <Button
+              onClick={() => setShowFixedExpenseForm(true)}
+              className="persona-glow bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+            >
+              <Plus className="h-4 w-4" />
+              Add Fixed Expense
+            </Button>
+          ) : (
+            <Button
+              onClick={() => setShowExpenseForm(true)}
+              className="persona-glow bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+            >
+              <Plus className="h-4 w-4" />
+              Add Expense
+            </Button>
+          )}
         </div>
       </div>
 
@@ -111,11 +125,20 @@ export function ExpensesPage() {
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="expenses" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 persona-tabs">
+      <Tabs
+        defaultValue="expenses"
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
+        <TabsList className="grid w-full grid-cols-4 persona-tabs">
           <TabsTrigger value="expenses" className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
             Expenses
+          </TabsTrigger>
+          <TabsTrigger value="fixed-expenses" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Fixed Expenses
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
@@ -129,6 +152,10 @@ export function ExpensesPage() {
 
         <TabsContent value="expenses" className="space-y-6">
           <ExpensesList />
+        </TabsContent>
+
+        <TabsContent value="fixed-expenses" className="space-y-6">
+          <FixedExpensesList />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
@@ -146,6 +173,14 @@ export function ExpensesPage() {
           open={showExpenseForm}
           onOpenChange={setShowExpenseForm}
           editingExpense={null}
+        />
+      )}
+
+      {showFixedExpenseForm && (
+        <FixedExpenseForm
+          open={showFixedExpenseForm}
+          onOpenChange={setShowFixedExpenseForm}
+          editingFixedExpense={null}
         />
       )}
     </div>

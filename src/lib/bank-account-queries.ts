@@ -29,6 +29,9 @@ export function useBankAccounts(filters?: BankAccountFilters) {
   })
 }
 
+// Alias for backwards compatibility
+export const useBankAccountsQuery = useBankAccounts
+
 // Hook for getting active bank accounts
 export function useActiveBankAccounts() {
   return useQuery({
