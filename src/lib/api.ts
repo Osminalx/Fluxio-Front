@@ -36,12 +36,15 @@ class ApiClient {
       }
     }
 
+    // Skip token refresh for logout endpoints - they should work even with expired tokens
+    const isLogoutEndpoint = endpoint.includes("/auth/logout")
+
     try {
       let response = await fetch(url, config)
       clearTimeout(timeoutId)
 
-      // Handle 401 Unauthorized - try to refresh token
-      if (response.status === 401 && this.getRefreshToken()) {
+      // Handle 401 Unauthorized - try to refresh token (but not for logout endpoints)
+      if (response.status === 401 && this.getRefreshToken() && !isLogoutEndpoint) {
         try {
           const newToken = await this.handleTokenRefresh()
 
@@ -69,9 +72,28 @@ class ApiClient {
       }
 
       if (!response.ok) {
+        // For 401 errors on logout endpoints, don't throw - let the logout function handle it
+        if (response.status === 401 && isLogoutEndpoint) {
+          // Clear tokens immediately for logout 401
+          if (typeof window !== "undefined") {
+            localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
+            localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+          }
+          return undefined as T
+        }
+
         const errorData: ApiError = await response.json().catch(() => ({
           message: "An unexpected error occurred",
         }))
+        
+        // For 401 errors after failed refresh, clear tokens
+        if (response.status === 401) {
+          if (typeof window !== "undefined") {
+            localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
+            localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+          }
+        }
+        
         throw new Error(errorData.message || `HTTP ${response.status}`)
       }
 
@@ -131,13 +153,17 @@ class ApiClient {
 
     const data = await response.json()
 
-    // Store new tokens
+    // Store new tokens (refreshToken may be absent depending on backend)
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token)
-      localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken)
+      if (data?.token) {
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token)
+      }
+      if (data?.refreshToken) {
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken)
+      }
     }
 
-    return data.token
+    return data.token as string
   }
 
   // HTTP Methods

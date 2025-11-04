@@ -200,8 +200,8 @@ export function BankAccountsList({
     )
   }
 
-  // Ensure accountsData is always an array
-  const allAccounts = Array.isArray(accountsData) ? accountsData : []
+  // Ensure accounts array is present
+  const allAccounts = accountsData?.items ?? []
 
   // Filter accounts based on showDeleted prop
   const accounts = showDeleted
@@ -308,9 +308,25 @@ export function BankAccountsList({
                 <div className="space-y-4">
                   <div>
                     <p className="text-2xl font-bold text-foreground">
-                      {formatCurrency(account.balance)}
+                      {formatCurrency(account.real_balance)}
                     </p>
-                    <p className="text-sm text-muted-foreground">Current Balance</p>
+                    <p className="text-sm text-muted-foreground">Real Balance</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Real = Current − Committed fixed expenses (this month)
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Current Balance</p>
+                      <p className="font-medium">{formatCurrency(account.balance)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Committed (This Month)</p>
+                      <p className="font-medium">
+                        {formatCurrency(account.committed_fixed_expenses_month)}
+                      </p>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -482,10 +498,10 @@ export function BankAccountsList({
                           {formatCurrency(
                             accounts
                               .filter((acc) => acc.status === "active")
-                              .reduce((sum, acc) => sum + acc.balance, 0)
+                              .reduce((sum, acc) => sum + acc.real_balance, 0)
                           )}
                         </p>
-                        <p className="text-sm text-muted-foreground">Total Active Balance</p>
+                        <p className="text-sm text-muted-foreground">Total Active Real Balance</p>
                       </div>
                       <div>
                         <p className="text-2xl font-bold">

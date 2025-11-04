@@ -8,6 +8,7 @@ import type {
   UpdateExpenseRequest,
 } from "@/types/expense"
 import { expenseApi } from "./expense-api"
+import { bankAccountKeys } from "./bank-account-queries"
 
 // Query keys
 export const expenseKeys = {
@@ -117,6 +118,9 @@ export const useCreateExpenseMutation = () => {
     mutationFn: (data: CreateExpenseRequest) => expenseApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: expenseKeys.all })
+      // Also refresh bank accounts as balances are adjusted by backend
+      queryClient.invalidateQueries({ queryKey: bankAccountKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: bankAccountKeys.active() })
     },
   })
 }
@@ -130,6 +134,8 @@ export const useUpdateExpenseMutation = () => {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: expenseKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: expenseKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: bankAccountKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: bankAccountKeys.active() })
     },
   })
 }
@@ -141,6 +147,8 @@ export const useDeleteExpenseMutation = () => {
     mutationFn: (id: string) => expenseApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: expenseKeys.all })
+      queryClient.invalidateQueries({ queryKey: bankAccountKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: bankAccountKeys.active() })
     },
   })
 }
@@ -153,6 +161,8 @@ export const useRestoreExpenseMutation = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: expenseKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: expenseKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: bankAccountKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: bankAccountKeys.active() })
     },
   })
 }
@@ -166,6 +176,8 @@ export const useUpdateExpenseStatusMutation = () => {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: expenseKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: expenseKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: bankAccountKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: bankAccountKeys.active() })
     },
   })
 }

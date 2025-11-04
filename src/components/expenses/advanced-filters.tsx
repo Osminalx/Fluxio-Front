@@ -49,7 +49,7 @@ export function AdvancedFilters({
   const { data: bankAccountsData } = useBankAccounts()
   const { data: groupedCategoriesData } = useGroupedCategoriesQuery()
 
-  const bankAccounts = Array.isArray(bankAccountsData) ? bankAccountsData : []
+  const bankAccounts = bankAccountsData?.items ?? []
   const groupedCategories = groupedCategoriesData || { needs: [], wants: [], savings: [] }
 
   const handleFilterChange = (key: keyof ExpenseFilters, value: string | number | undefined) => {

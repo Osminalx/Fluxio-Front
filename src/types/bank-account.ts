@@ -24,13 +24,27 @@ export type BankAccountStatusRequest = z.infer<typeof bankAccountStatusSchema>
 // API Response types (per API docs)
 export interface BankAccount {
   id: string
-  user_id: string
+  user_id?: string
   account_name: string
   balance: number
+  committed_fixed_expenses_month: number
+  real_balance: number
   status: Status
-  status_changed_at: string | null
+  status_changed_at?: string | null
   created_at: string
   updated_at: string
+}
+
+// List response from API
+export interface BankAccountListResponse {
+  bank_accounts: BankAccount[]
+  count: number
+}
+
+// Normalized list shape used by frontend
+export interface BankAccountList {
+  items: BankAccount[]
+  count: number
 }
 
 // Bank account state types

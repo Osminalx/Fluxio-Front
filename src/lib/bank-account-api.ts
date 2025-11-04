@@ -1,6 +1,8 @@
 import type {
   BankAccount,
   BankAccountFilters,
+  BankAccountList,
+  BankAccountListResponse,
   BankAccountStatusRequest,
   CreateBankAccountRequest,
   UpdateBankAccountRequest,
@@ -10,7 +12,7 @@ import { apiClient } from "./api"
 // Bank Account API functions
 export const bankAccountApi = {
   // GET /api/v1/bank-accounts
-  getAll: async (filters?: BankAccountFilters): Promise<BankAccount[]> => {
+  getAll: async (filters?: BankAccountFilters): Promise<BankAccountList> => {
     const params = new URLSearchParams()
     if (filters?.include_deleted) {
       params.append("include_deleted", "true")
@@ -22,13 +24,15 @@ export const bankAccountApi = {
     const queryString = params.toString()
     const endpoint = `/api/v1/bank-accounts${queryString ? `?${queryString}` : ""}`
 
-    const response = await apiClient.get<BankAccount[] | { bank_accounts: BankAccount[] }>(endpoint)
+    const response = await apiClient.get<
+      BankAccount[] | BankAccountListResponse
+    >(endpoint)
 
-    // Handle both direct array and wrapped response
     if (Array.isArray(response)) {
-      return response
+      return { items: response, count: response.length }
     }
-    return (response as { bank_accounts: BankAccount[] }).bank_accounts || []
+    const wrapped = response as BankAccountListResponse
+    return { items: wrapped.bank_accounts ?? [], count: wrapped.count ?? (wrapped.bank_accounts?.length ?? 0) }
   },
 
   // POST /api/v1/bank-accounts
@@ -37,29 +41,29 @@ export const bankAccountApi = {
   },
 
   // GET /api/v1/bank-accounts/active
-  getActive: async (): Promise<BankAccount[]> => {
-    const response = await apiClient.get<BankAccount[] | { bank_accounts: BankAccount[] }>(
-      "/api/v1/bank-accounts/active"
-    )
+  getActive: async (): Promise<BankAccountList> => {
+    const response = await apiClient.get<
+      BankAccount[] | BankAccountListResponse
+    >("/api/v1/bank-accounts/active")
 
-    // Handle both direct array and wrapped response
     if (Array.isArray(response)) {
-      return response
+      return { items: response, count: response.length }
     }
-    return (response as { bank_accounts: BankAccount[] }).bank_accounts || []
+    const wrapped = response as BankAccountListResponse
+    return { items: wrapped.bank_accounts ?? [], count: wrapped.count ?? (wrapped.bank_accounts?.length ?? 0) }
   },
 
   // GET /api/v1/bank-accounts/deleted
-  getDeleted: async (): Promise<BankAccount[]> => {
-    const response = await apiClient.get<BankAccount[] | { bank_accounts: BankAccount[] }>(
-      "/api/v1/bank-accounts/deleted"
-    )
+  getDeleted: async (): Promise<BankAccountList> => {
+    const response = await apiClient.get<
+      BankAccount[] | BankAccountListResponse
+    >("/api/v1/bank-accounts/deleted")
 
-    // Handle both direct array and wrapped response
     if (Array.isArray(response)) {
-      return response
+      return { items: response, count: response.length }
     }
-    return (response as { bank_accounts: BankAccount[] }).bank_accounts || []
+    const wrapped = response as BankAccountListResponse
+    return { items: wrapped.bank_accounts ?? [], count: wrapped.count ?? (wrapped.bank_accounts?.length ?? 0) }
   },
 
   // GET /api/v1/bank-accounts/{id}

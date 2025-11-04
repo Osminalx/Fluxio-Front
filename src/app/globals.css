@@ -161,6 +161,18 @@
     animation: gradientShift 15s ease infinite;
   }
   
+  /* Fade in up animation */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   /* Hover animations */
   .persona-hover {
     @apply transition-all duration-300 ease-out;
@@ -215,4 +227,187 @@
 @keyframes personaPulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
+}
+
+/* Enhanced Toast Styles with Colored Borders and Subtle Backgrounds */
+/* Sonner toast container - Base styles */
+[data-sonner-toast],
+[data-sonner-toaster] [data-sonner-toast] {
+  border-width: 2px !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Success Toast - Green Theme */
+[data-sonner-toast][data-type="success"],
+[data-sonner-toaster] [data-sonner-toast][data-type="success"],
+.toast[data-type="success"],
+.toast-success {
+  border-color: #10b981 !important;
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.08) 0%,
+    rgba(16, 185, 129, 0.03) 100%
+  ) !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(16, 185, 129, 0.1),
+    inset 0 1px 0 0 rgba(16, 185, 129, 0.05) !important;
+}
+
+/* Error Toast - Red Theme */
+[data-sonner-toast][data-type="error"],
+[data-sonner-toaster] [data-sonner-toast][data-type="error"],
+.toast[data-type="error"],
+.toast-error {
+  border-color: #ef4444 !important;
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.08) 0%,
+    rgba(239, 68, 68, 0.03) 100%
+  ) !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(239, 68, 68, 0.1),
+    inset 0 1px 0 0 rgba(239, 68, 68, 0.05) !important;
+}
+
+/* Warning Toast - Gold/Amber Theme */
+[data-sonner-toast][data-type="warning"],
+[data-sonner-toaster] [data-sonner-toast][data-type="warning"],
+.toast[data-type="warning"],
+.toast-warning {
+  border-color: #f59e0b !important;
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.08) 0%,
+    rgba(245, 158, 11, 0.03) 100%
+  ) !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(245, 158, 11, 0.1),
+    inset 0 1px 0 0 rgba(245, 158, 11, 0.05) !important;
+}
+
+/* Info Toast - Blue Theme */
+[data-sonner-toast][data-type="info"],
+[data-sonner-toaster] [data-sonner-toast][data-type="info"],
+.toast[data-type="info"],
+.toast-info {
+  border-color: #3b82f6 !important;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.08) 0%,
+    rgba(59, 130, 246, 0.03) 100%
+  ) !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(59, 130, 246, 0.1),
+    inset 0 1px 0 0 rgba(59, 130, 246, 0.05) !important;
+}
+
+/* Default Toast - Primary Color Theme */
+[data-sonner-toast]:not([data-type]),
+[data-sonner-toaster] [data-sonner-toast]:not([data-type]) {
+  border-color: hsl(var(--primary)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.08) 0%,
+    rgba(37, 99, 235, 0.03) 100%
+  ) !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Dark theme adjustments for better contrast */
+.dark [data-sonner-toast],
+.dark [data-sonner-toaster] [data-sonner-toast] {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--card-foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Dark theme - Success Toast */
+.dark [data-sonner-toast][data-type="success"],
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="success"],
+.dark .toast-success {
+  border-color: #10b981 !important;
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.15) 0%,
+    rgba(16, 185, 129, 0.05) 100%
+  ) !important;
+  background-color: hsl(var(--card)) !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 0 rgba(16, 185, 129, 0.1) !important;
+}
+
+/* Dark theme - Error Toast */
+.dark [data-sonner-toast][data-type="error"],
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="error"],
+.dark .toast-error {
+  border-color: #ef4444 !important;
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.15) 0%,
+    rgba(239, 68, 68, 0.05) 100%
+  ) !important;
+  background-color: hsl(var(--card)) !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(239, 68, 68, 0.2),
+    inset 0 1px 0 0 rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Dark theme - Warning Toast */
+.dark [data-sonner-toast][data-type="warning"],
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="warning"],
+.dark .toast-warning {
+  border-color: #f59e0b !important;
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.15) 0%,
+    rgba(245, 158, 11, 0.05) 100%
+  ) !important;
+  background-color: hsl(var(--card)) !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(245, 158, 11, 0.2),
+    inset 0 1px 0 0 rgba(245, 158, 11, 0.1) !important;
+}
+
+/* Dark theme - Info Toast */
+.dark [data-sonner-toast][data-type="info"],
+.dark [data-sonner-toaster] [data-sonner-toast][data-type="info"],
+.dark .toast-info {
+  border-color: #60a5fa !important;
+  background: linear-gradient(
+    135deg,
+    rgba(96, 165, 250, 0.15) 0%,
+    rgba(96, 165, 250, 0.05) 100%
+  ) !important;
+  background-color: hsl(var(--card)) !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(96, 165, 250, 0.2),
+    inset 0 1px 0 0 rgba(96, 165, 250, 0.1) !important;
 }

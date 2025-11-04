@@ -88,7 +88,7 @@ export function ExpenseForm({ open, onOpenChange, editingExpense }: ExpenseFormP
   const { data: groupedCategoriesData, isLoading: categoriesLoading } = useGroupedCategoriesQuery()
 
   // Ensure data is always in the correct format
-  const bankAccounts = Array.isArray(bankAccountsData) ? bankAccountsData : []
+  const bankAccounts = bankAccountsData?.items ?? []
 
   // Process grouped categories - ensure proper format
   const groupedCategories = groupedCategoriesData || { needs: [], wants: [], savings: [] }
@@ -223,7 +223,7 @@ export function ExpenseForm({ open, onOpenChange, editingExpense }: ExpenseFormP
                           <div className="flex items-center justify-between w-full">
                             <span>{account.account_name}</span>
                             <span className="text-sm text-muted-foreground ml-2">
-                              ${account.balance.toLocaleString()}
+                              ${account.real_balance.toLocaleString()}
                             </span>
                           </div>
                         </SelectItem>

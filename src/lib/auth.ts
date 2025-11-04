@@ -39,8 +39,8 @@ function isAuthenticated(): boolean {
 export async function login(credentials: LoginRequest): Promise<AuthResponse> {
   const response = await apiClient.post<AuthResponse>("/api/v1/auth/login", credentials)
 
-  // Store tokens
-  storeTokens(response.token, response.refreshToken)
+  // Store tokens (refreshToken may not be present depending on backend)
+  storeTokens(response.token, response.refreshToken ?? getRefreshToken() ?? "")
 
   return response
 }
@@ -48,15 +48,18 @@ export async function login(credentials: LoginRequest): Promise<AuthResponse> {
 export async function register(userData: RegisterRequest): Promise<AuthResponse> {
   const response = await apiClient.post<AuthResponse>("/api/v1/auth/register", userData)
 
-  // Store tokens
-  storeTokens(response.token, response.refreshToken)
+  // Store tokens (refreshToken may not be present depending on backend)
+  storeTokens(response.token, response.refreshToken ?? getRefreshToken() ?? "")
 
   return response
 }
 
 export async function logout(): Promise<void> {
   try {
-    await apiClient.post("/api/v1/auth/logout")
+    // Try to call logout API, but don't fail if it errors (e.g., 401)
+    await apiClient.post("/api/v1/auth/logout").catch(() => {
+      // Silently handle errors - token might already be expired
+    })
   } finally {
     // Always clear local storage, even if API call fails
     clearTokens()
@@ -65,7 +68,10 @@ export async function logout(): Promise<void> {
 
 export async function logoutAll(): Promise<void> {
   try {
-    await apiClient.post("/api/v1/auth/logout-all")
+    // Try to call logout API, but don't fail if it errors (e.g., 401)
+    await apiClient.post("/api/v1/auth/logout-all").catch(() => {
+      // Silently handle errors - token might already be expired
+    })
   } finally {
     // Always clear local storage, even if API call fails
     clearTokens()
@@ -82,8 +88,8 @@ export async function refreshToken(): Promise<AuthResponse> {
   const refreshPayload = { refresh_token: refreshTokenValue }
   const response = await apiClient.post<AuthResponse>("/api/v1/auth/refresh", refreshPayload)
 
-  // Update stored tokens
-  storeTokens(response.token, response.refreshToken)
+  // Update stored tokens; backend may only return { token }
+  storeTokens(response.token, response.refreshToken ?? refreshTokenValue)
 
   return response
 }

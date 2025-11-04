@@ -153,10 +153,11 @@ export function useRefreshToken() {
   return useMutation({
     mutationFn: refreshToken,
     onSuccess: (data) => {
-      // Update Zustand store
-      setUser(data.user)
-      // Update cached user data
-      queryClient.setQueryData(authKeys.user(), data.user)
+      // Some backends don't return user on refresh; only update if present
+      if (data.user) {
+        setUser(data.user)
+        queryClient.setQueryData(authKeys.user(), data.user)
+      }
     },
     onError: () => {
       // If refresh fails, logout user
