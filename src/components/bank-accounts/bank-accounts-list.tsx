@@ -10,10 +10,12 @@ import {
   MoreHorizontal,
   Plus,
   RefreshCw,
+  TrendingUp,
   Trash2,
   XCircle,
 } from "lucide-react"
 import { useEffect, useState } from "react"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ConfirmationModal } from "@/components/ui/confirmation-modal"
@@ -26,6 +28,8 @@ import {
 import { cn } from "@/lib/utils"
 import type { BankAccount } from "@/types/bank-account"
 import { STATUS_VALUES, type Status, StatusUtils } from "@/types/status"
+import { BankAccountStats } from "./bank-account-stats"
+import { BankAccountChart } from "./bank-account-chart"
 
 interface BankAccountsListProps {
   onCreateAccount: () => void
@@ -216,10 +220,15 @@ export function BankAccountsList({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex items-center justify-between"
+      >
         <div>
-          <h2 className="text-2xl font-bold persona-title">
-            {showDeleted ? "Deleted Bank Accounts" : "Bank Accounts"}
+          <h2 className="text-3xl font-bold persona-title">
+            {showDeleted ? "Deleted Bank Accounts" : "Active Bank Accounts"}
           </h2>
           <p className="text-muted-foreground mt-1">
             {showDeleted
@@ -228,12 +237,51 @@ export function BankAccountsList({
           </p>
         </div>
         {!showDeleted && (
-          <Button variant="default" className="gap-2" onClick={onCreateAccount}>
-            <Plus className="h-4 w-4" />
+          <Button
+            variant="default"
+            className="gap-2 persona-glow bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300"
+            size="lg"
+            onClick={onCreateAccount}
+          >
+            <Plus className="h-5 w-5" />
             Add Account
           </Button>
         )}
-      </div>
+      </motion.div>
+
+      {/* Statistics Cards */}
+      {accounts.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <BankAccountStats accounts={accounts} showDeleted={showDeleted} />
+        </motion.div>
+      )}
+
+      {/* Chart Section */}
+      {!showDeleted && accounts.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Card className="persona-card">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  <CardTitle>Account Balances Overview</CardTitle>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <BankAccountChart accounts={accounts} />
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Accounts Grid */}
       {accounts.length === 0 ? (
@@ -258,20 +306,25 @@ export function BankAccountsList({
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {accounts.map((account) => (
-            <Card
+          {accounts.map((account, index) => (
+            <motion.div
               key={account.id}
-              className={cn(
-                "persona-card cursor-pointer transition-all duration-200 hover:shadow-lg relative",
-                selectedAccount === account.id && "ring-2 ring-primary",
-                statusDropdownOpen === account.id && "z-50"
-              )}
-              onClick={() => setSelectedAccount(selectedAccount === account.id ? null : account.id)}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
             >
+              <Card
+                className={cn(
+                  "persona-card cursor-pointer transition-all duration-200 hover:shadow-xl relative persona-hover group",
+                  selectedAccount === account.id && "ring-2 ring-primary shadow-lg",
+                  statusDropdownOpen === account.id && "z-50"
+                )}
+                onClick={() => setSelectedAccount(selectedAccount === account.id ? null : account.id)}
+              >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg">
                       <Building2 className="h-5 w-5 text-primary" />
                     </div>
                     <div>
@@ -293,7 +346,7 @@ export function BankAccountsList({
                   </div>
                   <button
                     type="button"
-                    className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+                    className="p-1 rounded-md hover:bg-muted/50 transition-colors opacity-0 group-hover:opacity-100"
                     onClick={(e) => {
                       e.stopPropagation()
                       setSelectedAccount(selectedAccount === account.id ? null : account.id)
@@ -307,7 +360,7 @@ export function BankAccountsList({
               <CardContent className="pt-0">
                 <div className="space-y-4">
                   <div>
-                    <p className="text-2xl font-bold text-foreground">
+                    <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
                       {formatCurrency(account.real_balance)}
                     </p>
                     <p className="text-sm text-muted-foreground">Real Balance</p>
@@ -450,18 +503,24 @@ export function BankAccountsList({
                 </div>
               </CardContent>
             </Card>
+            </motion.div>
           ))}
         </div>
       )}
 
       {/* Summary Card */}
       {accounts.length > 0 && (
-        <Card className="persona-card">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Account Summary</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <Card className="persona-card">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold mb-4">Account Summary</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {showDeleted ? (
                     <>
                       <div>
@@ -526,6 +585,7 @@ export function BankAccountsList({
             </div>
           </CardContent>
         </Card>
+        </motion.div>
       )}
 
       {/* Delete Confirmation Modal */}

@@ -82,16 +82,24 @@ export function IncomesList() {
               </TableCell>
             </TableRow>
           ) : (
-            incomesList.map((income) => (
-              <TableRow key={income.id} className="hover:bg-muted/50 transition-colors duration-200">
+            incomesList.map((income, index) => (
+              <TableRow
+                key={income.id}
+                className="hover:bg-muted/50 transition-all duration-200 group"
+                style={{
+                  animation: `fadeInUp 0.3s ease-out ${index * 0.05}s both`,
+                }}
+              >
                 <TableCell className="font-medium">{formatDate(income.date)}</TableCell>
                 <TableCell>
                   <span className="text-sm text-muted-foreground truncate block">
-                    {income.bank_account?.account_name || "Unknown"}
+                    {income.bank_account_name || "Unknown"}
                   </span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <span className="font-semibold text-lg">{formatCurrency(income.amount)}</span>
+                  <span className="font-semibold text-lg text-emerald-600 dark:text-emerald-400">
+                    {formatCurrency(income.amount)}
+                  </span>
                 </TableCell>
                 <TableCell className="text-center">
                   <Badge
@@ -104,7 +112,7 @@ export function IncomesList() {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild={true}>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
                         <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">Open menu</span>
                       </Button>
@@ -140,6 +148,7 @@ export function IncomesList() {
     </div>
   )
 }
+
 
 
 

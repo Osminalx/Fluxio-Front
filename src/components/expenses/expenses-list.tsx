@@ -28,6 +28,7 @@ import { ExpenseTypeConverter, ExpenseTypeUtils } from "@/types/expense-type"
 import { AdvancedFilters, type ExpenseFilters } from "./advanced-filters"
 import { ExpenseDetailsModal } from "./expense-details-modal"
 import { ExpenseForm } from "./expense-form"
+import { motion } from "framer-motion"
 
 export function ExpensesList() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null)
@@ -209,7 +210,7 @@ export function ExpensesList() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredExpenses.map((expense) => {
+                filteredExpenses.map((expense, index) => {
                   // Handle both string values and objects from backend
                   let expenseTypeValue: string | undefined = expense.category?.expense_type as
                     | string
@@ -240,7 +241,10 @@ export function ExpensesList() {
                   return (
                     <TableRow
                       key={expense.id}
-                      className="hover:bg-muted/50 transition-colors duration-200"
+                      className="hover:bg-muted/50 transition-all duration-200 group"
+                      style={{
+                        animation: `fadeInUp 0.3s ease-out ${index * 0.05}s both`,
+                      }}
                     >
                       <TableCell className="font-medium">{formatDate(expense.date)}</TableCell>
                       <TableCell>
@@ -273,7 +277,7 @@ export function ExpensesList() {
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        <span className="font-semibold text-lg">
+                        <span className="font-semibold text-lg text-red-600 dark:text-red-400">
                           {formatCurrency(expense.amount)}
                         </span>
                       </TableCell>
@@ -288,7 +292,7 @@ export function ExpensesList() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild={true}>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
                               <MoreHorizontal className="h-4 w-4" />
                               <span className="sr-only">Open menu</span>
                             </Button>

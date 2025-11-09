@@ -286,3 +286,5 @@ export function GoalQuickAdd({ goal, open, onOpenChange }: GoalQuickAddProps) {
   )
 }
 
+
+

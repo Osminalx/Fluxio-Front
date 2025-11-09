@@ -2,17 +2,20 @@
 
 import { Calendar, DollarSign, Filter, Plus, TrendingUp } from "lucide-react"
 import { useState } from "react"
+import { motion } from "framer-motion"
 import { FixedExpenseForm } from "@/components/fixed-expenses/fixed-expense-form"
 import { FixedExpensesList } from "@/components/fixed-expenses/fixed-expenses-list"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useExpenseSummaryQuery } from "@/lib/expense-queries"
-import { EXPENSE_TYPE_NAMES, ExpenseTypeUtils } from "@/types/expense-type"
+import { useExpenseSummaryQuery, useExpensesQuery } from "@/lib/expense-queries"
 import { CategoriesManagement } from "./categories-management"
+import { ExpenseChart } from "./expense-chart"
 import { ExpenseForm } from "./expense-form"
+import { ExpenseStats } from "./expense-stats"
 import { ExpenseSummary } from "./expense-summary"
+import { ExpenseTypeCards } from "./expense-type-cards"
 import { ExpensesList } from "./expenses-list"
 
 export function ExpensesPage() {
@@ -21,16 +24,23 @@ export function ExpensesPage() {
   const [activeTab, setActiveTab] = useState("expenses")
 
   const { data: summary } = useExpenseSummaryQuery()
+  const { data: expenses } = useExpensesQuery()
+  const expensesList = Array.isArray(expenses) ? expenses : []
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 persona-gradient min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex items-center justify-between"
+      >
         <div>
-          <h1 className="text-3xl font-bold persona-title bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold persona-title bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
             Expense Management
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-muted-foreground mt-2 text-lg">
             Track your expenses following the 50/30/20 financial philosophy
           </p>
         </div>
@@ -38,91 +48,67 @@ export function ExpensesPage() {
           {activeTab === "fixed-expenses" ? (
             <Button
               onClick={() => setShowFixedExpenseForm(true)}
-              className="persona-glow bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+              className="persona-glow bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300"
+              size="lg"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-5 w-5 mr-2" />
               Add Fixed Expense
             </Button>
           ) : (
             <Button
               onClick={() => setShowExpenseForm(true)}
-              className="persona-glow bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+              className="persona-glow bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300"
+              size="lg"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-5 w-5 mr-2" />
               Add Expense
             </Button>
           )}
         </div>
-      </div>
+      </motion.div>
+
+      {/* Statistics Cards */}
+      {expensesList.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <ExpenseStats expenses={expensesList} />
+        </motion.div>
+      )}
 
       {/* 50/30/20 Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {EXPENSE_TYPE_NAMES.map((expenseTypeName) => {
-          const percentage = ExpenseTypeUtils.getRecommendedPercentage(expenseTypeName)
-          const color = ExpenseTypeUtils.getDisplayColor(expenseTypeName)
-          const description = ExpenseTypeUtils.getDescription(expenseTypeName)
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <ExpenseTypeCards summary={summary} />
+      </motion.div>
 
-          // Get actual spending for this expense type from summary
-          const expenseTypeData = summary?.by_expense_type?.find(
-            (item) => item.expense_type_name === expenseTypeName
-          )
-          const totalSpent = expenseTypeData?.total_amount || 0
-          const actualPercentage = summary?.total_amount
-            ? (totalSpent / summary.total_amount) * 100
-            : 0
-
-          return (
-            <Card
-              key={expenseTypeName}
-              className="persona-card border-2 hover:shadow-lg transition-all duration-300"
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-                    {expenseTypeName}
-                  </CardTitle>
-                  <Badge
-                    variant="secondary"
-                    className="persona-badge"
-                    style={{
-                      backgroundColor: `${color}20`,
-                      color: color,
-                      borderColor: color,
-                    }}
-                  >
-                    {percentage}%
-                  </Badge>
+      {/* Chart Section */}
+      {expensesList.length > 0 && activeTab === "expenses" && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <Card className="persona-card">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  <CardTitle>Expense Trends</CardTitle>
                 </div>
-                <CardDescription className="text-sm">{description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Total Spent</span>
-                    <span className="font-semibold text-lg" style={{ color }}>
-                      ${totalSpent.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Actual Percentage</span>
-                    <span className="font-medium">{actualPercentage.toFixed(1)}%</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div
-                      className="h-2 rounded-full transition-all duration-500"
-                      style={{
-                        backgroundColor: color,
-                        width: `${Math.min((totalSpent / (summary?.total_amount || 1)) * 100, 100)}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ExpenseChart expenses={expensesList} />
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Main Content Tabs */}
       <Tabs
