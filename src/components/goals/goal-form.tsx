@@ -95,7 +95,11 @@ export function GoalForm({ open, onOpenChange, editingGoal }: GoalFormProps) {
                 <FormItem>
                   <FormLabel>Goal Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Emergency Fund" {...field} className="persona-input" />
+                    <Input
+                      placeholder="e.g., Emergency Fund"
+                      {...field}
+                      className="persona-input"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -147,7 +151,12 @@ export function GoalForm({ open, onOpenChange, editingGoal }: GoalFormProps) {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="persona-hover">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="persona-hover"
+              >
                 Cancel
               </Button>
               <Button
@@ -170,6 +179,3 @@ export function GoalForm({ open, onOpenChange, editingGoal }: GoalFormProps) {
     </Dialog>
   )
 }
-
-
-

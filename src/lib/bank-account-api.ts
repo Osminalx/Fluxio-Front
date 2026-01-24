@@ -24,15 +24,16 @@ export const bankAccountApi = {
     const queryString = params.toString()
     const endpoint = `/api/v1/bank-accounts${queryString ? `?${queryString}` : ""}`
 
-    const response = await apiClient.get<
-      BankAccount[] | BankAccountListResponse
-    >(endpoint)
+    const response = await apiClient.get<BankAccount[] | BankAccountListResponse>(endpoint)
 
     if (Array.isArray(response)) {
       return { items: response, count: response.length }
     }
     const wrapped = response as BankAccountListResponse
-    return { items: wrapped.bank_accounts ?? [], count: wrapped.count ?? (wrapped.bank_accounts?.length ?? 0) }
+    return {
+      items: wrapped.bank_accounts ?? [],
+      count: wrapped.count ?? wrapped.bank_accounts?.length ?? 0,
+    }
   },
 
   // POST /api/v1/bank-accounts
@@ -42,28 +43,34 @@ export const bankAccountApi = {
 
   // GET /api/v1/bank-accounts/active
   getActive: async (): Promise<BankAccountList> => {
-    const response = await apiClient.get<
-      BankAccount[] | BankAccountListResponse
-    >("/api/v1/bank-accounts/active")
+    const response = await apiClient.get<BankAccount[] | BankAccountListResponse>(
+      "/api/v1/bank-accounts/active"
+    )
 
     if (Array.isArray(response)) {
       return { items: response, count: response.length }
     }
     const wrapped = response as BankAccountListResponse
-    return { items: wrapped.bank_accounts ?? [], count: wrapped.count ?? (wrapped.bank_accounts?.length ?? 0) }
+    return {
+      items: wrapped.bank_accounts ?? [],
+      count: wrapped.count ?? wrapped.bank_accounts?.length ?? 0,
+    }
   },
 
   // GET /api/v1/bank-accounts/deleted
   getDeleted: async (): Promise<BankAccountList> => {
-    const response = await apiClient.get<
-      BankAccount[] | BankAccountListResponse
-    >("/api/v1/bank-accounts/deleted")
+    const response = await apiClient.get<BankAccount[] | BankAccountListResponse>(
+      "/api/v1/bank-accounts/deleted"
+    )
 
     if (Array.isArray(response)) {
       return { items: response, count: response.length }
     }
     const wrapped = response as BankAccountListResponse
-    return { items: wrapped.bank_accounts ?? [], count: wrapped.count ?? (wrapped.bank_accounts?.length ?? 0) }
+    return {
+      items: wrapped.bank_accounts ?? [],
+      count: wrapped.count ?? wrapped.bank_accounts?.length ?? 0,
+    }
   },
 
   // GET /api/v1/bank-accounts/{id}

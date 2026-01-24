@@ -4,8 +4,8 @@ import { Plus } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { GoalsList } from "./goals-list"
 import { GoalForm } from "./goal-form"
+import { GoalsList } from "./goals-list"
 
 export function GoalsPage() {
   const [showGoalForm, setShowGoalForm] = useState(false)
@@ -45,6 +45,3 @@ export function GoalsPage() {
     </div>
   )
 }
-
-
-

@@ -9,19 +9,30 @@ import { apiClient } from "./api"
 
 // Helper to normalize response that may be array or wrapped
 const normalizeIncomesResponse = (response: Income[] | { incomes: Income[] }): Income[] => {
-  if (Array.isArray(response)) return response
+  if (Array.isArray(response)) {
+    return response
+  }
   return (response as { incomes: Income[] }).incomes || []
 }
 
 export const incomeApi = {
   getAll: async (filters?: IncomeFilters): Promise<Income[]> => {
     const params = new URLSearchParams()
-    if (filters?.bank_account_id) params.append("bank_account_id", filters.bank_account_id)
-    if (filters?.start_date) params.append("start_date", filters.start_date)
-    if (filters?.end_date) params.append("end_date", filters.end_date)
-    if (filters?.status) params.append("status", filters.status)
-    if (filters?.include_deleted)
+    if (filters?.bank_account_id) {
+      params.append("bank_account_id", filters.bank_account_id)
+    }
+    if (filters?.start_date) {
+      params.append("start_date", filters.start_date)
+    }
+    if (filters?.end_date) {
+      params.append("end_date", filters.end_date)
+    }
+    if (filters?.status) {
+      params.append("status", filters.status)
+    }
+    if (filters?.include_deleted) {
       params.append("include_deleted", filters.include_deleted.toString())
+    }
 
     const response = await apiClient.get<Income[] | { incomes: Income[] }>(
       `/api/v1/incomes${params.toString() ? `?${params.toString()}` : ""}`
@@ -30,9 +41,7 @@ export const incomeApi = {
   },
 
   getActive: async (): Promise<Income[]> => {
-    const response = await apiClient.get<Income[] | { incomes: Income[] }>(
-      "/api/v1/incomes/active"
-    )
+    const response = await apiClient.get<Income[] | { incomes: Income[] }>("/api/v1/incomes/active")
     return normalizeIncomesResponse(response)
   },
 
@@ -67,14 +76,3 @@ export const incomeApi = {
     return await apiClient.patch<Income>(`/api/v1/incomes/${id}/status`, data)
   },
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -1,11 +1,12 @@
 import { cn } from "@/lib/utils"
 
 interface Transaction {
-  id: number
+  id: string
   description: string
   amount: number
   date: string
   category: string
+  type?: "expense" | "income"
 }
 
 interface RecentTransactionsProps {
@@ -39,6 +40,15 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
     return colors[category] || "bg-gray-500/10 text-gray-500"
   }
 
+  if (!transactions || transactions.length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <p>No recent transactions</p>
+        <p className="text-sm mt-1">Start by adding expenses or income</p>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
       {transactions.map((transaction) => (
@@ -67,7 +77,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                 transaction.amount >= 0 ? "status-positive" : "status-negative"
               )}
             >
-              {formatCurrency(transaction.amount)}
+              {formatCurrency(Math.abs(transaction.amount))}
             </p>
           </div>
         </div>

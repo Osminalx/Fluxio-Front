@@ -81,6 +81,3 @@ export const goalApi = {
     return response
   },
 }
-
-
-

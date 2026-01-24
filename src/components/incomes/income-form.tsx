@@ -166,7 +166,12 @@ export function IncomeForm({ open, onOpenChange, editingIncome }: IncomeFormProp
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="persona-hover">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="persona-hover"
+              >
                 Cancel
               </Button>
               <Button
@@ -189,7 +194,3 @@ export function IncomeForm({ open, onOpenChange, editingIncome }: IncomeFormProp
     </Dialog>
   )
 }
-
-
-
-

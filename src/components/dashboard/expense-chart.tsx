@@ -1,6 +1,6 @@
 "use client"
 
-import { useId } from "react"
+import { useId, useMemo } from "react"
 import {
   Area,
   AreaChart,
@@ -10,23 +10,95 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-
-// Mock data for the chart
-const data = [
-  { month: "Jan", expenses: 2800, income: 8200 },
-  { month: "Feb", expenses: 3200, income: 8500 },
-  { month: "Mar", expenses: 2900, income: 8300 },
-  { month: "Apr", expenses: 3400, income: 8700 },
-  { month: "May", expenses: 3100, income: 8400 },
-  { month: "Jun", expenses: 3300, income: 8600 },
-  { month: "Jul", expenses: 3000, income: 8500 },
-  { month: "Aug", expenses: 3250, income: 8500 },
-  { month: "Sep", expenses: 3250, income: 8500 },
-]
+import { useActiveExpensesQuery } from "@/lib/expense-queries"
+import { useActiveIncomesQuery } from "@/lib/income-queries"
+import type { Expense } from "@/types/expense"
+import type { Income } from "@/types/income"
 
 export function ExpenseChart() {
   const incomeGradientId = useId()
   const expensesGradientId = useId()
+
+  // Fetch all active expenses and incomes
+  const { data: expenses, isLoading: expensesLoading } = useActiveExpensesQuery()
+  const { data: incomes, isLoading: incomesLoading } = useActiveIncomesQuery()
+
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const currentMonth = now.getMonth() + 1
+
+  // Prepare chart data for last 6 months
+  const data = useMemo(() => {
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ]
+
+    const chartData: Array<{ month: string; expenses: number; income: number }> = []
+
+    // Generate last 6 months
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(currentYear, currentMonth - 1 - i, 1)
+      const year = date.getFullYear()
+      const month = date.getMonth() + 1
+      const monthName = monthNames[date.getMonth()]
+
+      // Filter expenses for this month
+      const monthExpenses =
+        expenses?.filter((expense: Expense) => {
+          const expenseDate = new Date(expense.date)
+          return expenseDate.getFullYear() === year && expenseDate.getMonth() + 1 === month
+        }) || []
+
+      // Filter incomes for this month
+      const monthIncomes =
+        incomes?.filter((income: Income) => {
+          const incomeDate = new Date(income.date)
+          return incomeDate.getFullYear() === year && incomeDate.getMonth() + 1 === month
+        }) || []
+
+      // Calculate totals
+      const totalExpenses = monthExpenses.reduce((sum, expense) => sum + expense.amount, 0)
+      const totalIncome = monthIncomes.reduce((sum, income) => sum + income.amount, 0)
+
+      chartData.push({
+        month: monthName,
+        expenses: Math.round(totalExpenses * 100) / 100,
+        income: Math.round(totalIncome * 100) / 100,
+      })
+    }
+
+    return chartData
+  }, [expenses, incomes, currentYear, currentMonth])
+
+  const isLoading = expensesLoading || incomesLoading
+
+  if (isLoading) {
+    return (
+      <div className="h-64 flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading chart data...</div>
+      </div>
+    )
+  }
+
+  // Show empty state if no data
+  if (!data || data.length === 0 || data.every((d) => d.expenses === 0 && d.income === 0)) {
+    return (
+      <div className="h-64 flex items-center justify-center">
+        <div className="text-muted-foreground">No data available for the last 6 months</div>
+      </div>
+    )
+  }
 
   // Persona 3 Reload inspired colors - matching the game's sleek, modern aesthetic
   const persona3Colors = {

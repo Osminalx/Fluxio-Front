@@ -1,8 +1,8 @@
 "use client"
 
-import { motion, AnimatePresence } from "framer-motion"
-import { CheckCircle2, Plus, Sparkles, TrendingUp } from "lucide-react"
-import { useState, useEffect } from "react"
+import { AnimatePresence, motion } from "framer-motion"
+import { Plus, Sparkles, TrendingUp } from "lucide-react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,8 +17,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
 import { useUpdateGoalMutation } from "@/lib/goal-queries"
-import type { Goal } from "@/types/goal"
 import { cn } from "@/lib/utils"
+import type { Goal } from "@/types/goal"
 
 interface GoalQuickAddProps {
   goal: Goal
@@ -36,7 +36,7 @@ export function GoalQuickAdd({ goal, open, onOpenChange }: GoalQuickAddProps) {
   useEffect(() => {
     setPreviousProgress(goal.progress_percent)
     setAmount("")
-  }, [goal.id, open])
+  }, [goal.progress_percent])
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value)
@@ -130,10 +130,18 @@ export function GoalQuickAdd({ goal, open, onOpenChange }: GoalQuickAddProps) {
   ].filter((item) => item.value <= remaining)
 
   const getProgressColor = (progress: number) => {
-    if (progress >= 100) return "from-green-500 to-emerald-600"
-    if (progress >= 75) return "from-blue-500 to-cyan-500"
-    if (progress >= 50) return "from-purple-500 to-blue-500"
-    if (progress >= 25) return "from-yellow-500 to-orange-500"
+    if (progress >= 100) {
+      return "from-green-500 to-emerald-600"
+    }
+    if (progress >= 75) {
+      return "from-blue-500 to-cyan-500"
+    }
+    if (progress >= 50) {
+      return "from-purple-500 to-blue-500"
+    }
+    if (progress >= 25) {
+      return "from-yellow-500 to-orange-500"
+    }
     return "from-primary to-accent"
   }
 
@@ -224,7 +232,9 @@ export function GoalQuickAdd({ goal, open, onOpenChange }: GoalQuickAddProps) {
                 />
                 <Button
                   onClick={handleCustomAdd}
-                  disabled={updateGoal.isPending || !amount || Number.parseFloat(amount) > remaining}
+                  disabled={
+                    updateGoal.isPending || !amount || Number.parseFloat(amount) > remaining
+                  }
                   className="persona-glow bg-gradient-to-r from-primary to-accent"
                 >
                   <TrendingUp className="h-4 w-4 mr-2" />
@@ -255,7 +265,12 @@ export function GoalQuickAdd({ goal, open, onOpenChange }: GoalQuickAddProps) {
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="persona-hover">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="persona-hover"
+            >
               Close
             </Button>
           </DialogFooter>
@@ -285,6 +300,3 @@ export function GoalQuickAdd({ goal, open, onOpenChange }: GoalQuickAddProps) {
     </>
   )
 }
-
-
-

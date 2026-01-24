@@ -28,24 +28,11 @@ export function TanstackProvider({ children }: TanstackProviderProps) {
               }
               return failureCount < 3
             },
-            // Global error handler for 401 errors
-            onError: (error) => {
-              // If error message indicates authentication failure, clear tokens
-              if (
-                error instanceof Error &&
-                (error.message.includes("Authentication failed") ||
-                  error.message.includes("401") ||
-                  error.message.includes("Unauthorized"))
-              ) {
-                // Clear tokens to allow user to login again
-                clearTokens()
-              }
-            },
           },
           mutations: {
             retry: false,
             // Global error handler for mutations with 401 errors
-            onError: (error) => {
+            onError: (error: unknown) => {
               // If error message indicates authentication failure, clear tokens
               if (
                 error instanceof Error &&

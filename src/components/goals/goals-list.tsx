@@ -4,8 +4,8 @@ import { motion } from "framer-motion"
 import { Edit, MoreHorizontal, Plus, Sparkles, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,8 +21,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useDeleteGoalMutation, useGoalsQuery } from "@/lib/goal-queries"
-import type { Goal } from "@/types/goal"
 import { cn } from "@/lib/utils"
+import type { Goal } from "@/types/goal"
 import { GoalForm } from "./goal-form"
 import { GoalQuickAdd } from "./goal-quick-add"
 
@@ -58,18 +58,34 @@ export function GoalsList() {
   }
 
   const getProgressColor = (progress: number) => {
-    if (progress >= 100) return "from-green-500 to-emerald-600"
-    if (progress >= 75) return "from-blue-500 to-cyan-500"
-    if (progress >= 50) return "from-purple-500 to-blue-500"
-    if (progress >= 25) return "from-yellow-500 to-orange-500"
+    if (progress >= 100) {
+      return "from-green-500 to-emerald-600"
+    }
+    if (progress >= 75) {
+      return "from-blue-500 to-cyan-500"
+    }
+    if (progress >= 50) {
+      return "from-purple-500 to-blue-500"
+    }
+    if (progress >= 25) {
+      return "from-yellow-500 to-orange-500"
+    }
     return "from-primary to-accent"
   }
 
   const getMilestoneIcon = (progress: number) => {
-    if (progress >= 100) return "🎉"
-    if (progress >= 75) return "⭐"
-    if (progress >= 50) return "🔥"
-    if (progress >= 25) return "✨"
+    if (progress >= 100) {
+      return "🎉"
+    }
+    if (progress >= 75) {
+      return "⭐"
+    }
+    if (progress >= 50) {
+      return "🔥"
+    }
+    if (progress >= 25) {
+      return "✨"
+    }
     return null
   }
 
@@ -120,7 +136,11 @@ export function GoalsList() {
                       {milestoneIcon && (
                         <motion.span
                           animate={{ scale: [1, 1.2, 1] }}
-                          transition={{ repeat: Infinity, duration: 2, delay: index * 0.2 }}
+                          transition={{
+                            repeat: Number.POSITIVE_INFINITY,
+                            duration: 2,
+                            delay: index * 0.2,
+                          }}
                           className="text-lg"
                         >
                           {milestoneIcon}
@@ -144,7 +164,13 @@ export function GoalsList() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="flex-1 relative group cursor-pointer" onClick={() => handleQuickAdd(goal)}>
+                      <button
+                        type="button"
+                        onClick={() => handleQuickAdd(goal)}
+                        disabled={isComplete}
+                        className="flex-1 relative group cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                        aria-label={`Quick add to ${goal.name}`}
+                      >
                         <div className="relative h-3 w-full overflow-hidden rounded-full bg-primary/20">
                           <div
                             className={cn(
@@ -154,7 +180,7 @@ export function GoalsList() {
                             style={{ width: `${goal.progress_percent}%` }}
                           />
                         </div>
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity">
                           <motion.div
                             whileHover={{ scale: 1.1 }}
                             className="bg-background/90 backdrop-blur-sm rounded-full p-1 shadow-lg"
@@ -162,11 +188,14 @@ export function GoalsList() {
                             <Plus className="h-3 w-3 text-primary" />
                           </motion.div>
                         </div>
-                      </div>
+                      </button>
                       <div className="flex items-center gap-1 min-w-[4rem] justify-end">
-                        <span className="text-sm font-medium">{goal.progress_percent.toFixed(0)}%</span>
+                        <span className="text-sm font-medium">
+                          {goal.progress_percent.toFixed(0)}%
+                        </span>
                       </div>
                       <motion.button
+                        type="button"
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => handleQuickAdd(goal)}
@@ -174,8 +203,10 @@ export function GoalsList() {
                         className={cn(
                           "rounded-full p-1.5 transition-all",
                           "bg-primary/10 hover:bg-primary/20",
-                          "disabled:opacity-50 disabled:cursor-not-allowed"
+                          "disabled:opacity-50 disabled:cursor-not-allowed",
+                          "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                         )}
+                        aria-label={`Quick add to ${goal.name}`}
                         title="Quick add to goal"
                       >
                         <Sparkles className="h-3.5 w-3.5 text-primary" />
@@ -199,7 +230,10 @@ export function GoalsList() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={() => handleQuickAdd(goal)} disabled={isComplete}>
+                        <DropdownMenuItem
+                          onClick={() => handleQuickAdd(goal)}
+                          disabled={isComplete}
+                        >
                           <Plus className="h-4 w-4 mr-2" />
                           Add Progress
                         </DropdownMenuItem>
@@ -238,4 +272,3 @@ export function GoalsList() {
     </div>
   )
 }
-

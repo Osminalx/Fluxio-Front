@@ -11,8 +11,7 @@ export const createGoalSchema = z.object({
   saved_amount: z
     .number()
     .min(0, "Saved amount must be non-negative")
-    .multipleOf(0.01, "Amount must have at most 2 decimal places")
-    .default(0),
+    .multipleOf(0.01, "Amount must have at most 2 decimal places"),
 })
 
 export const updateGoalSchema = createGoalSchema.partial()
@@ -60,6 +59,3 @@ export interface GoalFormData {
   total_amount: string
   saved_amount: string
 }
-
-
-

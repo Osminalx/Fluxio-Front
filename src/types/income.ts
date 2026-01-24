@@ -61,12 +61,3 @@ export interface IncomeFormData {
   bank_account_id: string
   date: string
 }
-
-
-
-
-
-
-
-
-

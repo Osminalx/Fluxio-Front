@@ -64,8 +64,7 @@ export const useUpdateGoalMutation = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateGoalRequest }) =>
-      goalApi.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateGoalRequest }) => goalApi.update(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: goalKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: goalKeys.lists() })
@@ -108,6 +107,3 @@ export const useUpdateGoalStatusMutation = () => {
     },
   })
 }
-
-
-

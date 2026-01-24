@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   BankAccountFilters,
+  BankAccountList,
   BankAccountStatusRequest,
   CreateBankAccountRequest,
   UpdateBankAccountRequest,
 } from "@/types/bank-account"
-import type { BankAccountList } from "@/types/bank-account"
 import type { Status } from "@/types/status"
 import { bankAccountApi } from "./bank-account-api"
 
@@ -115,7 +115,9 @@ export function useDeleteBankAccount() {
       // Optimistically update all list queries by marking the account as deleted
       queryClient.setQueriesData({ queryKey: bankAccountKeys.lists() }, (old: unknown) => {
         const data = old as BankAccountList | undefined
-        if (!data || !Array.isArray(data.items)) return old
+        if (!data || !Array.isArray(data.items)) {
+          return old
+        }
         return {
           ...data,
           items: data.items.map((account) =>
@@ -179,7 +181,9 @@ export function useRestoreBankAccount() {
         // Update the optimistic data with the real data
         queryClient.setQueriesData({ queryKey: bankAccountKeys.lists() }, (old: unknown) => {
           const data = old as BankAccountList | undefined
-          if (!data || !Array.isArray(data.items)) return old
+          if (!data || !Array.isArray(data.items)) {
+            return old
+          }
           return {
             ...data,
             items: data.items.map((account) => (account.id === id ? restoredAccount : account)),
