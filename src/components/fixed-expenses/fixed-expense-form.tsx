@@ -99,7 +99,7 @@ export function FixedExpenseForm({
 
   // Process grouped categories - ensure proper format
   const groupedCategories = groupedCategoriesData || { needs: [], wants: [], savings: [] }
-  const activeBankAccounts = bankAccounts?.filter((acc) => acc.status === "active") || []
+  const activeBankAccounts = bankAccounts?.items?.filter((acc) => acc.status === "active") || []
 
   const onSubmit = async (data: CreateFixedExpenseRequest) => {
     try {

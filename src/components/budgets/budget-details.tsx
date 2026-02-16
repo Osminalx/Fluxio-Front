@@ -55,7 +55,8 @@ export function BudgetDetails({ budget, onBack }: BudgetDetailsProps) {
     })
   }
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | null) => {
+    if (amount == null) return "—"
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
