@@ -1,0 +1,31 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Build output
+.next
+out
+build
+
+# Git
+.git
+.gitignore
+
+# Env and secrets
+.env*
+!.env.example
+
+# Misc
+.DS_Store
+*.md
+.vercel
+coverage
+*.log
+*.tsbuildinfo
+next-env.d.ts

@@ -1,0 +1,12 @@
+services:
+  fluxio-front:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+        NEXT_PUBLIC_API_VERSION: ${NEXT_PUBLIC_API_VERSION:-v1}
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
